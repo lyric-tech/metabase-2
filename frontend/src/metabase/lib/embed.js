@@ -2,7 +2,7 @@ import { push } from "react-router-redux";
 import _ from "underscore";
 
 import { isFitViewportMode } from "metabase/hoc/FitViewPort";
-import { isWithinIframe, IFRAMED_IN_SELF } from "metabase/lib/dom";
+import { IFRAMED_IN_SELF, isWithinIframe } from "metabase/lib/dom";
 import { setInitialUrlOptions } from "metabase/redux/embed";
 
 // detect if this page is embedded in itself, i.e. it's a embed preview
@@ -46,7 +46,7 @@ export function initializeEmbedding(store) {
   }
 }
 
-function sendMessage(message) {
+export function sendMessage(message) {
   // Reason for using "*" (see #18824)
   //  1) We cannot use MetabaseSettings.get("embedding-app-origin") because the format is different
   //      - the setting value can have multiple URLs but postMessage only supports one URL

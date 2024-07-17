@@ -22,6 +22,8 @@ import type {
   DashboardRefreshPeriodControls,
   EmbedNightModeControls,
 } from "metabase/dashboard/types";
+import { isWithinIframe } from "metabase/lib/dom";
+import { sendMessage } from "metabase/lib/embed";
 import { useDispatch, useSelector } from "metabase/lib/redux";
 import { fetchPulseFormInput } from "metabase/pulse/actions";
 import { getSetting } from "metabase/selectors/settings";
@@ -122,6 +124,9 @@ export const DashboardHeaderInner = ({
         key="save-edit-button"
         onDoneEditing={() => {
           onRefreshPeriodChange(null);
+          if (isWithinIframe()) {
+            sendMessage("dashboard:done-editing");
+          }
         }}
       />,
     ];
