@@ -65,6 +65,7 @@ export const PublicOrEmbeddedDashboardPage = (props: WithRouterProps) => {
         font={font}
         parameterQueryParams={parameterQueryParams}
         cardTitled={true}
+        navigateToNewCardFromDashboard={() => {}}
       />
     </>
   );
