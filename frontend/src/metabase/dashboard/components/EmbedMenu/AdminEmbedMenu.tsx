@@ -12,21 +12,21 @@ import {
 import { useSelector } from "metabase/lib/redux";
 import { ResourceEmbedButton } from "metabase/public/components/ResourceEmbedButton";
 import { getSetting } from "metabase/selectors/settings";
-import { Menu, Title, Text, Stack, Center, Icon } from "metabase/ui";
+import { Center, Icon, Menu, Stack, Text, Title } from "metabase/ui";
 
 import { AdminEmbedMenuContainer } from "./AdminEmbedMenu.styled";
 
 export const AdminEmbedMenu = ({
   resource,
   resourceType,
-  hasPublicLink,
+  // hasPublicLink,
   onModalOpen,
 }: EmbedMenuProps) => {
   const [menuMode, setMenuMode] = useState<EmbedMenuModes>(null);
 
-  const isPublicSharingEnabled = useSelector(state =>
-    getSetting(state, "enable-public-sharing"),
-  );
+  // const isPublicSharingEnabled = useSelector(state =>
+  //   getSetting(state, "enable-public-sharing"),
+  // );
   const isEmbeddingEnabled = useSelector(state =>
     getSetting(state, "enable-embedding"),
   );
@@ -58,7 +58,7 @@ export const AdminEmbedMenu = ({
       <Menu.Target>{target}</Menu.Target>
 
       <AdminEmbedMenuContainer w="13.75rem" data-testid="embed-header-menu">
-        <Menu.Item
+        {/* <Menu.Item
           data-testid="embed-menu-public-link-item"
           py={isPublicSharingEnabled ? "md" : "sm"}
           icon={
@@ -79,7 +79,7 @@ export const AdminEmbedMenu = ({
               <Text size="sm">{t`Enable them in settings`}</Text>
             </Stack>
           )}
-        </Menu.Item>
+        </Menu.Item> */}
 
         <Menu.Item
           data-testid="embed-menu-embed-modal-item"
