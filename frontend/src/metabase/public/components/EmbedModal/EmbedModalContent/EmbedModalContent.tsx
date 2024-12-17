@@ -45,22 +45,22 @@ export const EmbedModalContent = (
     getPublicUrl,
   } = props;
 
-  if (embedType == null) {
-    return (
-      <SelectEmbedTypePane
-        resource={resource}
-        resourceType={resourceType}
-        onCreatePublicLink={onCreatePublicLink}
-        onDeletePublicLink={onDeletePublicLink}
-        getPublicUrl={getPublicUrl}
-        goToNextStep={goToNextStep}
-      />
-    );
-  }
+  // if (embedType == null) {
+  //   return (
+  //     <SelectEmbedTypePane
+  //       resource={resource}
+  //       resourceType={resourceType}
+  //       onCreatePublicLink={onCreatePublicLink}
+  //       onDeletePublicLink={onDeletePublicLink}
+  //       getPublicUrl={getPublicUrl}
+  //       goToNextStep={goToNextStep}
+  //     />
+  //   );
+  // }
 
-  if (embedType === "legalese") {
-    return <LegaleseStep goToNextStep={goToNextStep} />;
-  }
+  // if (embedType === "legalese") {
+  //   return <LegaleseStep goToNextStep={goToNextStep} />;
+  // }
 
   return (
     <StaticEmbedSetupPane

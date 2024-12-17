@@ -272,8 +272,8 @@ export const QuestionActions = ({
 
   return (
     <>
-      <QuestionActionsDivider />
-      {!question.isArchived() && (
+      {/* <QuestionActionsDivider /> */}
+      {/* {!question.isArchived() && (
         <ViewHeaderIconButtonContainer>
           <BookmarkToggle
             onCreateBookmark={onToggleBookmark}
@@ -293,7 +293,7 @@ export const QuestionActions = ({
             data-testid="qb-header-info-button"
           />
         </ViewHeaderIconButtonContainer>
-      </Tooltip>
+      </Tooltip> */}
       {canAppend && (
         <>
           <UploadInput
@@ -333,14 +333,14 @@ export const QuestionActions = ({
           </Tooltip>
         </>
       )}
-      {extraButtons.length > 0 && !question.isArchived() && (
+      {/* {extraButtons.length > 0 && !question.isArchived() && (
         <EntityMenu
           triggerAriaLabel={t`Move, trash, and more...`}
           items={extraButtons}
           triggerIcon="ellipsis"
           tooltip={t`Move, trash, and more...`}
         />
-      )}
+      )} */}
     </>
   );
 };

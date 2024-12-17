@@ -77,17 +77,9 @@ function LastEditInfoLabel({
   if (!children) {
     if (prefix) {
       // FIXME: The following two strings won't correctly translate.
-      if (editorFullName) {
-        children = `${prefix} ${timeLabel} by ${editorFullName}`;
-      } else {
-        children = `${prefix} ${timeLabel}`;
-      }
+      children = `${prefix} ${timeLabel}`;
     } else {
-      if (editorFullName) {
-        children = t`Edited ${timeLabel} by ${editorFullName}`;
-      } else {
-        children = t`Edited ${timeLabel}`;
-      }
+      children = t`Edited ${timeLabel}`;
     }
   }
 
@@ -97,7 +89,7 @@ function LastEditInfoLabel({
         <TextButton
           className={className}
           size="small"
-          onClick={onClick}
+          // onClick={onClick}
           data-testid="revision-history-button"
         >
           {children}

@@ -63,14 +63,7 @@ export function QuestionList({
   const query = createQuery();
 
   function createQuery(): SearchRequest {
-    const baseQuery = isSearching
-      ? {
-          q: trimmedSearchText,
-          ...(showOnlyPublicCollections && {
-            filter_items_in_personal_collection: "exclude" as const,
-          }),
-        }
-      : { collection: collectionId };
+    const baseQuery =  { collection: collectionId }; // removed quering all collections
 
     return {
       ...baseQuery,
@@ -95,6 +88,8 @@ export function QuestionList({
   return (
     <Search.ListLoader entityQuery={query} wrapped>
       {({ list, metadata }: SearchListLoaderProps) => {
+        // this added to filter the list based on the search text
+        const newList = list.filter(item => searchText.trim() === "" || item.getName().toLowerCase().includes(searchText.toLowerCase()));
         const shouldShowEmptyState =
           list.length === 0 && (isSearching || !hasCollections);
         if (shouldShowEmptyState) {
@@ -108,7 +103,7 @@ export function QuestionList({
         return (
           <>
             <SelectList>
-              {list.map(item => (
+              {newList.map(item => (
                 <QuestionListItem
                   key={item.id}
                   id={item.id}

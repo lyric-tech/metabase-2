@@ -59,9 +59,9 @@ export default class Breadcrumbs extends Component {
                 )}
               >
                 {breadcrumb.length > 1 && typeof breadcrumb[1] === "string" ? (
-                  <Link to={breadcrumb[1]}>{breadcrumb[0]}</Link>
+                  breadcrumb[0]
                 ) : (
-                  <span onClick={breadcrumb[1]}>{breadcrumb[0]}</span>
+                  breadcrumb[0]
                 )}
               </Ellipsified>
             ))
