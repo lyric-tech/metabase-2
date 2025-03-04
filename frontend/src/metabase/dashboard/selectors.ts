@@ -572,9 +572,11 @@ export const getTabHiddenParameterSlugs = createSelector(
 
     const currentTabParameterIds = getMappedParametersIds(currentTabDashcards);
     const hiddenParameters = parameters.filter(
-      parameter => !currentTabParameterIds.includes(parameter.id),
+      parameter =>
+        parameter.slug === "lyric_scenario_id" ||
+        parameter.id === "lyric_scenario_id" ||
+        !currentTabParameterIds.includes(parameter.id),
     );
-
     return hiddenParameters.map(p => p.slug).join(",");
   },
 );
