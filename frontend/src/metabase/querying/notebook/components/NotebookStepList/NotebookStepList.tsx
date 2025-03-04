@@ -8,6 +8,8 @@ import type Question from "metabase-lib/v1/Question";
 import type { NotebookStep as INotebookStep, OpenSteps } from "../../types";
 import { NotebookStep } from "../NotebookStep";
 
+import { processSteps } from "./helpers";
+
 interface NotebookStepListProps {
   className?: string;
   question: Question;
@@ -49,7 +51,8 @@ export function NotebookStepList({
     if (!question) {
       return [];
     }
-    return getQuestionSteps(question, metadata, openSteps);
+    const initialSteps = getQuestionSteps(question, metadata, openSteps) ?? [];
+    return processSteps(initialSteps);
   }, [metadata, question, openSteps]);
 
   const handleStepOpen = useCallback((id: INotebookStep["id"]) => {
