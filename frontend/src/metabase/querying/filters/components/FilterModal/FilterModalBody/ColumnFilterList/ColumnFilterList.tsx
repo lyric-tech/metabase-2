@@ -26,16 +26,18 @@ export const ColumnFilterList = ({
 
   return (
     <>
-      {sortedItems.map((columnItem, columnIndex) => (
-        <ColumnFilterGroup
-          key={columnIndex}
-          query={query}
-          columnItem={columnItem}
-          isSearching={isSearching}
-          onChange={onChange}
-          onInput={onInput}
-        />
-      ))}
+      {sortedItems
+        .filter(columnItem => columnItem.displayName !== "Lyric Scenario ID")
+        ?.map((columnItem, columnIndex) => (
+          <ColumnFilterGroup
+            key={columnIndex}
+            query={query}
+            columnItem={columnItem}
+            isSearching={isSearching}
+            onChange={onChange}
+            onInput={onInput}
+          />
+        ))}
     </>
   );
 };

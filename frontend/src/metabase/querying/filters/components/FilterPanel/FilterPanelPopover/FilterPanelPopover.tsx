@@ -36,6 +36,10 @@ export function FilterPanelPopover({
     setIsOpened(false);
   };
 
+  if (filterInfo.longDisplayName?.includes("Lyric Scenario ID")) {
+    return null;
+  }
+
   return (
     <Popover
       opened={isOpened}
