@@ -27,7 +27,6 @@ import { FilterHeaderButton } from "../FilterHeaderButton";
 import { QuestionActions } from "../QuestionActions";
 import { QuestionNotebookButton } from "../QuestionNotebookButton";
 import { QuestionSummarizeWidget } from "../QuestionSummarizeWidget";
-import { ToggleNativeQueryPreview } from "../ToggleNativeQueryPreview";
 
 interface ViewTitleHeaderRightSideProps {
   question: Question;
@@ -186,10 +185,13 @@ export function ViewTitleHeaderRightSide({
           setQueryBuilderMode={setQueryBuilderMode}
         />
       )}
-      {ToggleNativeQueryPreview.shouldRender({
+
+      {/* Not showing "View SQL" button */}
+      {/* {ToggleNativeQueryPreview.shouldRender({
         question,
         queryBuilderMode,
-      }) && <ToggleNativeQueryPreview question={question} />}
+      }) && <ToggleNativeQueryPreview question={question} />} */}
+
       {hasExploreResultsLink && <ExploreResultsLink question={question} />}
       {hasRunButton && !isShowingNotebook && (
         <ViewHeaderIconButtonContainer>
