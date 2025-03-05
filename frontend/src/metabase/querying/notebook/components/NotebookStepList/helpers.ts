@@ -3,9 +3,6 @@ import type { NotebookStep as INotebookStep } from "../../types";
 const isNotDataStep = (step: INotebookStep): boolean => step.type !== "data";
 
 const removeJoinButton = (step: INotebookStep): INotebookStep => {
-  if (step.type !== "summarize") {
-    return step;
-  }
   return {
     ...step,
     actions: step.actions?.filter(action => action.type !== "join") ?? [],
