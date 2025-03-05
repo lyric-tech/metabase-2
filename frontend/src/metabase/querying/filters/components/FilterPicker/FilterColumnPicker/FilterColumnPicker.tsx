@@ -71,12 +71,17 @@ export function FilterColumnPicker({
     const sections = columnGroups.map(group => {
       const groupInfo = Lib.displayInfo(query, stageIndex, group);
 
-      const columnItems = Lib.getColumnsFromColumnGroup(group).map(column => ({
-        ...Lib.displayInfo(query, stageIndex, column),
-        column,
-        query,
-        stageIndex,
-      }));
+      // hide 'Lyric Scenario ID' column option from the add filter popover
+      const columnItems = Lib.getColumnsFromColumnGroup(group)
+        .map(column => ({
+          ...Lib.displayInfo(query, stageIndex, column),
+          column,
+          query,
+          stageIndex,
+        }))
+        ?.filter(
+          columnItem => !columnItem.displayName.includes("Lyric Scenario ID"),
+        );
 
       const includeSegments = groupInfo.isSourceTable;
 
