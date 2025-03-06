@@ -22,7 +22,6 @@ export function FilterStep({
     () => Lib.filters(query, stageIndex),
     [query, stageIndex],
   );
-
   const renderFilterName = (filter: Lib.FilterClause) =>
     Lib.displayInfo(query, stageIndex, filter).longDisplayName;
 
@@ -62,10 +61,18 @@ export function FilterStep({
     updateQuery(nextQuery);
   };
 
+  const filtersWithoutLyricScenarioId = filters?.filter(filterItem => {
+    const filterName = renderFilterName(filterItem);
+    if (filterName?.includes("Lyric Scenario ID")) {
+      return false;
+    }
+    return true;
+  });
+
   return (
     <ErrorBoundary>
       <ClauseStep
-        items={filters}
+        items={filtersWithoutLyricScenarioId}
         initialAddText={t`Add filters to narrow your answer`}
         readOnly={readOnly}
         color={color}

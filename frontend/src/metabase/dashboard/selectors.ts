@@ -566,15 +566,17 @@ export const getTabHiddenParameterSlugs = createSelector(
   [getParameters, getCurrentTabDashcards, getIsEditing],
   (parameters, currentTabDashcards, isEditing) => {
     if (isEditing) {
-      // All filters should be visible in edit mode
-      return undefined;
+      // All filters should be visible in edit mode except filter with 'lyric_scenario_id' as slug
+      return "lyric_scenario_id";
     }
 
     const currentTabParameterIds = getMappedParametersIds(currentTabDashcards);
     const hiddenParameters = parameters.filter(
-      parameter => !currentTabParameterIds.includes(parameter.id),
+      parameter =>
+        parameter.slug === "lyric_scenario_id" ||
+        parameter.id === "lyric_scenario_id" ||
+        !currentTabParameterIds.includes(parameter.id),
     );
-
     return hiddenParameters.map(p => p.slug).join(",");
   },
 );
