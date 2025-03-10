@@ -117,11 +117,14 @@ const SortPopover = ({
 
     const filteredColumns = columns.filter(column => {
       const columnInfo = Lib.displayInfo(query, stageIndex, column);
+      // hide 'Lyric Scenario ID' column option from the add filter popover
+      if (columnInfo?.displayName.includes("Lyric Scenario ID")) {
+        return false;
+      }
       const isAlreadyUsed = columnInfo.orderByPosition != null;
       const isSelected = checkColumnSelected(columnInfo, orderByIndex);
       return isSelected || !isAlreadyUsed;
     });
-
     return Lib.groupColumns(filteredColumns);
   }, [query, stageIndex, orderByIndex]);
 
