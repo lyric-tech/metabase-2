@@ -123,20 +123,8 @@ export const useClickedStateTooltipSync = (
 ) => {
   useEffect(
     function toggleTooltip() {
-      const isTooltipEnabled = clicked == null;
-
-      let parentUrl = "";
-      try {
-        parentUrl = window.parent.location.href;
-      } catch (e) {
-        parentUrl = "";
-      }
-
-      if (parentUrl.includes("app.lyric.tech")) {
-        chart?.setOption({ tooltip: { show: true } }, false);
-      } else {
-        chart?.setOption({ tooltip: { show: isTooltipEnabled } }, false);
-      }
+      // const isTooltipEnabled = clicked == null;
+      chart?.setOption({ tooltip: { show: true } }, false);
     },
     [chart, clicked],
   );
