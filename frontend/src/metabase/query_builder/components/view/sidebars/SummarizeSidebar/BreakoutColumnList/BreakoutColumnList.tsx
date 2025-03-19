@@ -36,11 +36,13 @@ export function BreakoutColumnList({
   const breakouts = Lib.breakouts(query, stageIndex);
   const [pinnedItemCount, setPinnedItemCount] = useState(breakouts.length);
 
+  // hiding 'Lyric Scenario ID' column option from the summarize pinned column list
   const pinnedItems = useMemo(
     () =>
       breakouts
         .slice(0, pinnedItemCount)
-        .map(breakout => getBreakoutListItem(query, stageIndex, breakout)),
+        .map(breakout => getBreakoutListItem(query, stageIndex, breakout))
+        .filter(item => !item.displayName.includes("Lyric Scenario ID")),
     [query, stageIndex, breakouts, pinnedItemCount],
   );
 
@@ -221,9 +223,12 @@ function getColumnSections(
   return Lib.groupColumns(filteredColumns).map(group => {
     const groupInfo = Lib.displayInfo(query, stageIndex, group);
 
-    const items = Lib.getColumnsFromColumnGroup(group).flatMap(column =>
-      getColumnListItems(query, stageIndex, breakouts, column),
-    );
+    // hiding 'Lyric Scenario ID' column option from the summarize column list
+    const items = Lib.getColumnsFromColumnGroup(group)
+      .flatMap(column =>
+        getColumnListItems(query, stageIndex, breakouts, column),
+      )
+      ?.filter(item => !item.displayName.includes("Lyric Scenario ID"));
 
     return {
       name: groupInfo.displayName,
