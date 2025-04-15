@@ -159,7 +159,7 @@ export function DashboardHeaderView({
   }, [isLastEditInfoVisible]);
 
   return (
-    <div>
+    <div style={{ backgroundColor: "red" }}>
       {isEditing && <EditBar title={editingTitle} buttons={editingButtons} />}
       {editWarning && (
         <EditWarning className={CS.wrapper}>
