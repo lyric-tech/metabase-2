@@ -180,11 +180,11 @@ type FetchCardDataActionArgs = {
 
 type FetchCardDataActionReturned =
   | {
-      dashcard_id: DashCardId;
-      card_id: CardId;
-      result: Dataset | { error: unknown } | null;
-      currentTime?: number;
-    }
+    dashcard_id: DashCardId;
+    card_id: CardId;
+    result: Dataset | { error: unknown } | null;
+    currentTime?: number;
+  }
   | undefined;
 
 export const fetchCardDataAction = createAsyncThunk<
@@ -358,14 +358,14 @@ export const fetchCardDataAction = createAsyncThunk<
       const requestBody = shouldUseCardQueryEndpoint
         ? { cardId: card.id, ignore_cache: ignoreCache }
         : {
-            dashboardId: dashcard.dashboard_id,
-            dashcardId: dashcard.id,
-            cardId: card.id,
-            parameters: datasetQuery.parameters,
-            ignore_cache: ignoreCache,
-            dashboard_id: dashcard.dashboard_id,
-            dashboard_load_id: dashboardLoadId,
-          };
+          dashboardId: dashcard.dashboard_id,
+          dashcardId: dashcard.id,
+          cardId: card.id,
+          parameters: datasetQuery.parameters,
+          ignore_cache: ignoreCache,
+          dashboard_id: dashcard.dashboard_id,
+          dashboard_load_id: dashboardLoadId,
+        };
 
       result = await fetchDataOrError(
         maybeUsePivotEndpoint(endpoint, card)(requestBody, queryOptions),
@@ -390,96 +390,96 @@ export const fetchCardData =
     dashcard: FetchCardDataActionArgs["dashcard"],
     options: FetchCardDataActionArgs["options"] = {},
   ) =>
-  async (dispatch: Dispatch) => {
-    await dispatch(
-      fetchCardDataAction({
-        card,
-        dashcard,
-        options,
-      }),
-    );
-  };
+    async (dispatch: Dispatch) => {
+      await dispatch(
+        fetchCardDataAction({
+          card,
+          dashcard,
+          options,
+        }),
+      );
+    };
 
 export const fetchDashboardCardData =
   ({ isRefreshing = false, reload = false, clearCache = false } = {}) =>
-  (dispatch: Dispatch, getState: GetState) => {
-    const dashboard = getDashboardComplete(getState());
-    if (!dashboard) {
-      return;
-    }
-
-    const selectedTabId = getSelectedTabId(getState());
-    const dashboardLoadId = uuid();
-    const loadingIds = getLoadingDashCards(getState()).loadingIds;
-    const nonVirtualDashcards = getCurrentTabDashboardCards(
-      dashboard,
-      selectedTabId,
-    ).filter(({ dashcard }) => !isVirtualDashCard(dashcard));
-
-    let nonVirtualDashcardsToFetch = [];
-    if (isRefreshing) {
-      nonVirtualDashcardsToFetch = nonVirtualDashcards.filter(
-        ({ dashcard }) => {
-          return !loadingIds.includes(dashcard.id);
-        },
-      );
-      const newLoadingIds = nonVirtualDashcardsToFetch.map(({ dashcard }) => {
-        return dashcard.id;
-      });
-
-      dispatch(
-        fetchDashboardCardDataAction({
-          currentTime: performance.now(),
-          loadingIds: loadingIds.concat(newLoadingIds),
-        }),
-      );
-    } else {
-      nonVirtualDashcardsToFetch = nonVirtualDashcards;
-      const newLoadingIds = nonVirtualDashcardsToFetch.map(({ dashcard }) => {
-        return dashcard.id;
-      });
-
-      for (const id of loadingIds) {
-        const dashcard = getDashCardById(getState(), id);
-        dispatch(cancelFetchCardData(dashcard.card.id, dashcard.id));
+    (dispatch: Dispatch, getState: GetState) => {
+      const dashboard = getDashboardComplete(getState());
+      if (!dashboard) {
+        return;
       }
 
-      dispatch(
-        fetchDashboardCardDataAction({
-          currentTime: performance.now(),
-          loadingIds: newLoadingIds,
-        }),
-      );
-    }
+      const selectedTabId = getSelectedTabId(getState());
+      const dashboardLoadId = uuid();
+      const loadingIds = getLoadingDashCards(getState()).loadingIds;
+      const nonVirtualDashcards = getCurrentTabDashboardCards(
+        dashboard,
+        selectedTabId,
+      ).filter(({ dashcard }) => !isVirtualDashCard(dashcard));
 
-    const promises = nonVirtualDashcardsToFetch.map(
-      async ({ card, dashcard }) => {
-        await dispatch(
-          // TODO: fix the return type of getAllDashboardCards to make sure
-          // that the relationship between a dashcard and its card
-          // is actually reflected in the type system
-          fetchCardData(card as Card, dashcard, {
-            reload,
-            clearCache,
-            dashboardLoadId,
+      let nonVirtualDashcardsToFetch = [];
+      if (isRefreshing) {
+        nonVirtualDashcardsToFetch = nonVirtualDashcards.filter(
+          ({ dashcard }) => {
+            return !loadingIds.includes(dashcard.id);
+          },
+        );
+        const newLoadingIds = nonVirtualDashcardsToFetch.map(({ dashcard }) => {
+          return dashcard.id;
+        });
+
+        dispatch(
+          fetchDashboardCardDataAction({
+            currentTime: performance.now(),
+            loadingIds: loadingIds.concat(newLoadingIds),
           }),
         );
-        await dispatch(updateLoadingTitle(nonVirtualDashcardsToFetch.length));
-      },
-    );
+      } else {
+        nonVirtualDashcardsToFetch = nonVirtualDashcards;
+        const newLoadingIds = nonVirtualDashcardsToFetch.map(({ dashcard }) => {
+          return dashcard.id;
+        });
 
-    if (nonVirtualDashcardsToFetch.length > 0) {
-      dispatch(
-        setDocumentTitle(t`0/${nonVirtualDashcardsToFetch.length} loaded`),
+        for (const id of loadingIds) {
+          const dashcard = getDashCardById(getState(), id);
+          dispatch(cancelFetchCardData(dashcard.card.id, dashcard.id));
+        }
+
+        dispatch(
+          fetchDashboardCardDataAction({
+            currentTime: performance.now(),
+            loadingIds: newLoadingIds,
+          }),
+        );
+      }
+
+      const promises = nonVirtualDashcardsToFetch.map(
+        async ({ card, dashcard }) => {
+          await dispatch(
+            // TODO: fix the return type of getAllDashboardCards to make sure
+            // that the relationship between a dashcard and its card
+            // is actually reflected in the type system
+            fetchCardData(card as Card, dashcard, {
+              reload,
+              clearCache,
+              dashboardLoadId,
+            }),
+          );
+          await dispatch(updateLoadingTitle(nonVirtualDashcardsToFetch.length));
+        },
       );
 
-      // TODO: There is a race condition here, when refreshing a dashboard before
-      // the previous API calls finished.
-      return Promise.all(promises).then(() => {
-        dispatch(loadingComplete());
-      });
-    }
-  };
+      if (nonVirtualDashcardsToFetch.length > 0) {
+        dispatch(
+          setDocumentTitle(t`0/${nonVirtualDashcardsToFetch.length} loaded`),
+        );
+
+        // TODO: There is a race condition here, when refreshing a dashboard before
+        // the previous API calls finished.
+        return Promise.all(promises).then(() => {
+          dispatch(loadingComplete());
+        });
+      }
+    };
 
 export const reloadDashboardCards =
   () => async (dispatch: Dispatch, getState: GetState) => {
@@ -742,14 +742,15 @@ export const fetchDashboard = createAsyncThunk(
       const parameterValuesById = preserveParameters
         ? getParameterValues(getState())
         : getParameterValuesByIdFromQueryParams(
-            parameters,
-            queryParams,
-            lastUsedParametersValues,
-          );
+          parameters,
+          queryParams,
+          lastUsedParametersValues,
+        );
 
       entities = entities ?? normalize(result, dashboardSchema).entities;
 
       if (result?.dashcards) {
+        console.log("result.dashcards: ", result.dashcards);
         result.dashcards.forEach((dashcard: any) => {
           const sourceQuery =
             dashcard?.card?.dataset_query?.query?.["source-query"];
