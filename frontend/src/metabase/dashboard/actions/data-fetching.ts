@@ -749,14 +749,28 @@ export const fetchDashboard = createAsyncThunk(
 
       entities = entities ?? normalize(result, dashboardSchema).entities;
 
+
+      function getLyricScenarioFieldId(response: any) {
+        const param_fields = response?.param_fields;
+
+        if (!param_fields) {
+          return null;
+        }
+
+        const lyricScenarioFieldId = Object.keys(param_fields).find(key => param_fields[key].name === "lyric_scenario_id");
+        return lyricScenarioFieldId;
+      }
+
+
+
       if (result?.dashcards) {
-        console.log("result.dashcards: ", result.dashcards);
         result.dashcards.forEach((dashcard: any) => {
           const sourceQuery =
             dashcard?.card?.dataset_query?.query?.["source-query"];
 
-          if (sourceQuery) {
-            const lyricScenarioFieldId = 127597;
+          const lyricScenarioFieldId = getLyricScenarioFieldId(result);
+
+          if (sourceQuery && lyricScenarioFieldId) {
             const isFieldAlreadyInBreakout = sourceQuery.breakout?.some(
               (item: any) =>
                 Array.isArray(item) &&
@@ -775,6 +789,8 @@ export const fetchDashboard = createAsyncThunk(
           }
         });
       }
+
+      console.log("response: ", result);
 
       return {
         entities,
