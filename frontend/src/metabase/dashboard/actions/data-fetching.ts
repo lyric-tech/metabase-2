@@ -822,35 +822,6 @@ export const fetchDashboard = createAsyncThunk(
         result.dashcards = await Promise.all(dashcardPromises);
       }
 
-
-
-      // if (result?.dashcards) {
-      //   result.dashcards.forEach((dashcard: any) => {
-      //     const sourceQuery =
-      //       dashcard?.card?.dataset_query?.query?.["source-query"];
-
-      //     const lyricScenarioFieldId = getLyricScenarioFieldId(result);
-
-      //     if (sourceQuery && lyricScenarioFieldId) {
-      //       const isFieldAlreadyInBreakout = sourceQuery.breakout?.some(
-      //         (item: any) =>
-      //           Array.isArray(item) &&
-      //           item[0] === "field" &&
-      //           item[1] === lyricScenarioFieldId,
-      //       );
-      //       if (
-      // !isFieldAlreadyInBreakout &&
-      //         Array.isArray(sourceQuery.breakout)
-      //       ) {
-      //         sourceQuery.breakout = [
-      //           ...sourceQuery.breakout,
-      //           ["field", lyricScenarioFieldId, { "base-type": "type/Text" }],
-      //         ];
-      //       }
-      //     }
-      //   });
-      // }
-
       console.log("response: ", result);
 
       return {

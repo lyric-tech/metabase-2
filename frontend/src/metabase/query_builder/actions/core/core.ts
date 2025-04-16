@@ -50,6 +50,7 @@ import { onCloseSidebars } from "../ui";
 import { loadCard } from "./card";
 import { API_UPDATE_QUESTION, SOFT_RELOAD_CARD } from "./types";
 import { updateQuestion } from "./updateQuestion";
+import { CardApi } from "metabase/services";
 
 export const RESET_QB = "metabase/qb/RESET_QB";
 export const resetQB = createAction(RESET_QB);
@@ -135,10 +136,10 @@ export const setCardAndRun = (
 
     const originalCard = card.original_card_id
       ? // If the original card id is present, dynamically load its information for showing lineage
-        await loadCard(card.original_card_id, { dispatch, getState })
+      await loadCard(card.original_card_id, { dispatch, getState })
       : // Otherwise, use a current card as the original card if the card has been saved
-        // This is needed for checking whether the card is in dirty state or not
-        card.id
+      // This is needed for checking whether the card is in dirty state or not
+      card.id
         ? card
         : null;
 
@@ -303,7 +304,53 @@ export const apiUpdateQuestion = (
       await dispatch(updateModelIndexes(question));
     }
 
-    await dispatch(loadMetadataForCard(question.card()));
+    const metadataResponse = await dispatch(loadMetadataForCard(question.card()));
+    const updatedCard = updatedQuestion.card();
+    const tableId = (updatedCard as any)["table_id"];
+    console.log('tableId', tableId);
+    const metadataTablesObj = (metadataResponse as any)?.payload?.entities?.tables;
+    console.log('metadataTablesObj', metadataTablesObj);
+    let cardsTableObj = undefined;
+
+    for (const key in metadataTablesObj) {
+      if (metadataTablesObj[key]?.id === tableId) {
+        cardsTableObj = metadataTablesObj[key];
+        break;
+      }
+    }
+
+    console.log('cardsTableObj', cardsTableObj);
+
+    const lyricScenarioId = cardsTableObj?.fields?.find((field: any) => field.name === "lyric_scenario_id")?.id;
+    console.log('lyricScenarioId', lyricScenarioId);
+
+    console.log('updatedCard', updatedCard);
+
+    const sourceQuery = (updatedCard as any)?.dataset_query?.query?.["source-query"];
+    console.log('sourceQuery', sourceQuery);
+
+    const isFieldAlreadyInBreakout = sourceQuery?.breakout?.some((item: any) => Array.isArray(item) && item[0] === "field" && item[1] === lyricScenarioId);
+
+    if (sourceQuery && Array.isArray(sourceQuery.breakout) && !isFieldAlreadyInBreakout && lyricScenarioId) {
+      const updatedCardWithLyricScenarioId = {
+        ...updatedCard,
+        dataset_query: {
+          ...updatedCard.dataset_query,
+          query: {
+            ...(updatedCard as any).dataset_query.query, "source-query": {
+              ...sourceQuery,
+              breakout: [
+                ...sourceQuery.breakout,
+                ["field", lyricScenarioId, { "base-type": "type/Text" }]
+              ]
+            }
+          }
+        }
+      }
+      console.log('updatedCardWithLyricScenarioId', updatedCardWithLyricScenarioId);
+      await CardApi.update(updatedCardWithLyricScenarioId);
+    }
+
 
     if (rerunQuery) {
       dispatch(runQuestionQuery());
