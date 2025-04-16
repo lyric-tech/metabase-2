@@ -246,6 +246,50 @@ export const apiCreateQuestion = (question: Question) => {
 
     const metadataTablesObj = (metadataResponse as any)?.payload?.entities?.tables;
     console.log('metadataTablesObj', metadataTablesObj);
+    const tableId = (card as any)["table_id"];
+    console.log('tableId', tableId);
+    let cardsTableObj = undefined;
+
+    for (const key in metadataTablesObj) {
+      if (metadataTablesObj[key]?.id === tableId) {
+        cardsTableObj = metadataTablesObj[key];
+        break;
+      }
+    }
+
+    console.log('cardsTableObj', cardsTableObj);
+
+    const lyricScenarioId = cardsTableObj?.fields?.find((field: any) => field.name === "lyric_scenario_id")?.id;
+    console.log('lyricScenarioId', lyricScenarioId);
+
+    const sourceQuery = (card as any)?.dataset_query?.query?.["source-query"];
+    console.log('sourceQuery', sourceQuery);
+
+    const isFieldAlreadyInBreakout = sourceQuery?.breakout?.some((item: any) => Array.isArray(item) && item[0] === "field" && item[1] === lyricScenarioId);
+
+    if (sourceQuery && Array.isArray(sourceQuery.breakout) && !isFieldAlreadyInBreakout && lyricScenarioId) {
+      const updatedCardWithLyricScenarioId = {
+        ...card,
+        dataset_query: {
+          ...card.dataset_query,
+          query: {
+            ...(card as any).dataset_query.query,
+            "source-query": {
+              ...sourceQuery,
+              breakout: [
+                ...sourceQuery.breakout,
+                ["field", lyricScenarioId, { "base-type": "type/Text" }]
+              ]
+            }
+          }
+        }
+      };
+
+      console.log('updatedCardWithLyricScenarioId', updatedCardWithLyricScenarioId);
+
+      await CardApi.update(updatedCardWithLyricScenarioId);
+    }
+
 
 
     const isModel = question.type() === "model";
