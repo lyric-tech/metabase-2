@@ -752,12 +752,23 @@ export const fetchDashboard = createAsyncThunk(
 
       function getLyricScenarioFieldId(response: any) {
         const param_fields = response?.param_fields;
+        let lyricScenarioFieldId: number | undefined = undefined;
 
         if (!param_fields) {
           return null;
         }
 
-        const lyricScenarioFieldId = Object.keys(param_fields).find(key => param_fields[key].name === "lyric_scenario_id");
+        for (const key in param_fields) {
+          if (param_fields[key].name === "lyric_scenario_id") {
+            lyricScenarioFieldId = param_fields[key].id;
+            break;
+          }
+        }
+
+        if (lyricScenarioFieldId === undefined) {
+          return undefined;
+        }
+
         return lyricScenarioFieldId;
       }
 
