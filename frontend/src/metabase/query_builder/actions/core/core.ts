@@ -219,6 +219,7 @@ export const setDatasetQuery =
 export const API_CREATE_QUESTION = "metabase/qb/API_CREATE_QUESTION";
 export const apiCreateQuestion = (question: Question) => {
   return async (dispatch: Dispatch, getState: GetState) => {
+    console.log('apiCreateQuestion');
     const submittableQuestion = getSubmittableQuestion(getState(), question);
     const createdQuestion = await reduxCreateQuestion(
       submittableQuestion,
@@ -241,7 +242,11 @@ export const apiCreateQuestion = (question: Question) => {
     const card = createdQuestion.lockDisplay().card();
     dispatch({ type: API_CREATE_QUESTION, payload: card });
 
-    await dispatch(loadMetadataForCard(card));
+    const metadataResponse = await dispatch(loadMetadataForCard(card));
+
+    const metadataTablesObj = (metadataResponse as any)?.payload?.entities?.tables;
+    console.log('metadataTablesObj', metadataTablesObj);
+
 
     const isModel = question.type() === "model";
     const isMetric = question.type() === "metric";
