@@ -750,8 +750,8 @@ export const fetchDashboard = createAsyncThunk(
       entities = entities ?? normalize(result, dashboardSchema).entities;
 
 
-      function getLyricScenarioFieldId(response: any) {
-        const param_fields = response?.param_fields;
+      function getLyricScenarioFieldId(param_fields: any, cardTableId: any) {
+
         let lyricScenarioFieldId: number | undefined = undefined;
 
         if (!param_fields) {
@@ -759,7 +759,7 @@ export const fetchDashboard = createAsyncThunk(
         }
 
         for (const key in param_fields) {
-          if (param_fields[key].name === "lyric_scenario_id") {
+          if (param_fields[key].name === "lyric_scenario_id" && param_fields[key].table_id === cardTableId) {
             lyricScenarioFieldId = param_fields[key].id;
             break;
           }
@@ -773,12 +773,12 @@ export const fetchDashboard = createAsyncThunk(
       }
 
       // put call for cards which have source-query and not have lyric_scenario_id
-      const lyricScenarioFieldId = getLyricScenarioFieldId(result);
-      console.log("lyricScenarioFieldId: ", lyricScenarioFieldId);
 
-      if (result?.dashcards && lyricScenarioFieldId) {
+      if (result?.dashcards) {
         const dashcardPromises = result.dashcards.map(async (dashcard: any) => {
           const sourceQuery = dashcard?.card?.dataset_query?.query?.["source-query"];
+          const lyricScenarioFieldId = getLyricScenarioFieldId(result.param_fields, dashcard.card?.table_id);
+          console.log("lyricScenarioFieldId: ", lyricScenarioFieldId);
 
           if (sourceQuery && Array.isArray(sourceQuery.breakout)) {
             const isFieldAlreadyInBreakout = sourceQuery.breakout.some(
