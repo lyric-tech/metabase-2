@@ -772,34 +772,84 @@ export const fetchDashboard = createAsyncThunk(
         return lyricScenarioFieldId;
       }
 
+      // put call for cards which have source-query and not have lyric_scenario_id
+      const lyricScenarioFieldId = getLyricScenarioFieldId(result);
+      console.log("lyricScenarioFieldId: ", lyricScenarioFieldId);
 
+      if (result?.dashcards && lyricScenarioFieldId) {
+        const dashcardPromises = result.dashcards.map(async (dashcard: any) => {
+          const sourceQuery = dashcard?.card?.dataset_query?.query?.["source-query"];
 
-      if (result?.dashcards) {
-        result.dashcards.forEach((dashcard: any) => {
-          const sourceQuery =
-            dashcard?.card?.dataset_query?.query?.["source-query"];
-
-          const lyricScenarioFieldId = getLyricScenarioFieldId(result);
-
-          if (sourceQuery && lyricScenarioFieldId) {
-            const isFieldAlreadyInBreakout = sourceQuery.breakout?.some(
-              (item: any) =>
-                Array.isArray(item) &&
-                item[0] === "field" &&
-                item[1] === lyricScenarioFieldId,
+          if (sourceQuery && Array.isArray(sourceQuery.breakout)) {
+            const isFieldAlreadyInBreakout = sourceQuery.breakout.some(
+              (item: any) => Array.isArray(item) && item[0] === "field" && item[1] === lyricScenarioFieldId
             );
-            if (
-              !isFieldAlreadyInBreakout &&
-              Array.isArray(sourceQuery.breakout)
-            ) {
-              sourceQuery.breakout = [
-                ...sourceQuery.breakout,
-                ["field", lyricScenarioFieldId, { "base-type": "type/Text" }],
-              ];
+
+            if (!isFieldAlreadyInBreakout) {
+              try {
+                const cardToUpdate = {
+                  ...dashcard.card,
+                  dataset_query: {
+                    ...dashcard.card.dataset_query,
+                    query: {
+                      ...dashcard.card.dataset_query.query,
+                      "source-query": {
+                        ...sourceQuery,
+                        breakout: [
+                          ...sourceQuery.breakout,
+                          ["field", lyricScenarioFieldId, { "base-type": "type/Text" }]
+                        ]
+                      }
+                    }
+                  }
+                };
+
+                const updatedCard = await CardApi.update(cardToUpdate);
+                console.log("Card update response:", updatedCard);
+                return { ...dashcard, card: updatedCard };
+              } catch (error) {
+                console.error("Failed to update card:", error);
+                return dashcard;
+              }
+            } else {
+              return dashcard;
             }
+          } else {
+            return dashcard;
           }
         });
+
+        result.dashcards = await Promise.all(dashcardPromises);
       }
+
+
+
+      // if (result?.dashcards) {
+      //   result.dashcards.forEach((dashcard: any) => {
+      //     const sourceQuery =
+      //       dashcard?.card?.dataset_query?.query?.["source-query"];
+
+      //     const lyricScenarioFieldId = getLyricScenarioFieldId(result);
+
+      //     if (sourceQuery && lyricScenarioFieldId) {
+      //       const isFieldAlreadyInBreakout = sourceQuery.breakout?.some(
+      //         (item: any) =>
+      //           Array.isArray(item) &&
+      //           item[0] === "field" &&
+      //           item[1] === lyricScenarioFieldId,
+      //       );
+      //       if (
+      // !isFieldAlreadyInBreakout &&
+      //         Array.isArray(sourceQuery.breakout)
+      //       ) {
+      //         sourceQuery.breakout = [
+      //           ...sourceQuery.breakout,
+      //           ["field", lyricScenarioFieldId, { "base-type": "type/Text" }],
+      //         ];
+      //       }
+      //     }
+      //   });
+      // }
 
       console.log("response: ", result);
 
