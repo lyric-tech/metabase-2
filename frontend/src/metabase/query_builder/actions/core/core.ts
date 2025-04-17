@@ -326,7 +326,7 @@ export const apiUpdateQuestion = (
     // When viewing a dataset, its dataset_query is swapped with a clean query using the dataset as a source table
     // (it's necessary for datasets to behave like tables opened in simple mode)
     // When doing updates like changing name, description, etc., we need to omit the dataset_query in the request body
-    const updatedQuestion = await reduxUpdateQuestion(
+    let updatedQuestion = await reduxUpdateQuestion(
       submittableQuestion,
       dispatch,
       {
@@ -342,18 +342,9 @@ export const apiUpdateQuestion = (
     // (some of the old alerts might be removed during update)
     await dispatch(fetchAlertsForQuestion(updatedQuestion.id()));
 
-    await dispatch({
-      type: API_UPDATE_QUESTION,
-      payload: updatedQuestion.card(),
-    });
-
-    if (isModel) {
-      // this needs to happen after the question update completes in case we have changed the type
-      // of the primary key field in the same update
-      await dispatch(updateModelIndexes(question));
-    }
-
     const metadataResponse = await dispatch(loadMetadataForCard(question.card()));
+
+    /* Adding the lyric scenario id to the question */
     const updatedCard = updatedQuestion.card();
     const tableId = (updatedCard as any)["table_id"];
     console.log('tableId', tableId);
@@ -397,9 +388,23 @@ export const apiUpdateQuestion = (
         }
       }
       console.log('updatedCardWithLyricScenarioId', updatedCardWithLyricScenarioId);
-      await CardApi.update(updatedCardWithLyricScenarioId);
+      const updatedCardResponse = await CardApi.update(updatedCardWithLyricScenarioId);
+      console.log("updated response: ", updatedCardResponse);
+      updatedQuestion = updatedQuestion.setCard(updatedCardResponse);
+      console.log("Updated question: ", updatedQuestion.card());
     }
+    /* End of adding the lyric scenario id to the question */
 
+    await dispatch({
+      type: API_UPDATE_QUESTION,
+      payload: updatedQuestion.card(),
+    });
+
+    if (isModel) {
+      // this needs to happen after the question update completes in case we have changed the type
+      // of the primary key field in the same update
+      await dispatch(updateModelIndexes(question));
+    }
 
     if (rerunQuery) {
       dispatch(runQuestionQuery());
