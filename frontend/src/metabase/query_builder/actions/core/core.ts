@@ -259,7 +259,7 @@ export const apiCreateQuestion = (question: Question) => {
 
     console.log('cardsTableObj', cardsTableObj);
 
-    const lyricScenarioId = cardsTableObj?.fields?.find((field: any) => field.name === "lyric_scenario_id")?.id;
+    const lyricScenarioId = cardsTableObj?.original_fields?.find((field: any) => field.name === "lyric_scenario_id")?.id;
     console.log('lyricScenarioId', lyricScenarioId);
 
     const sourceQuery = (card as any)?.dataset_query?.query?.["source-query"];
@@ -361,7 +361,7 @@ export const apiUpdateQuestion = (
 
     console.log('cardsTableObj', cardsTableObj);
 
-    const lyricScenarioId = cardsTableObj?.fields?.find((field: any) => field.name === "lyric_scenario_id")?.id;
+    const lyricScenarioId = cardsTableObj?.original_fields?.find((field: any) => field.name === "lyric_scenario_id")?.id;
     console.log('lyricScenarioId', lyricScenarioId);
 
     console.log('updatedCard', updatedCard);
