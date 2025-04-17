@@ -180,11 +180,11 @@ type FetchCardDataActionArgs = {
 
 type FetchCardDataActionReturned =
   | {
-    dashcard_id: DashCardId;
-    card_id: CardId;
-    result: Dataset | { error: unknown } | null;
-    currentTime?: number;
-  }
+      dashcard_id: DashCardId;
+      card_id: CardId;
+      result: Dataset | { error: unknown } | null;
+      currentTime?: number;
+    }
   | undefined;
 
 export const fetchCardDataAction = createAsyncThunk<
@@ -358,14 +358,14 @@ export const fetchCardDataAction = createAsyncThunk<
       const requestBody = shouldUseCardQueryEndpoint
         ? { cardId: card.id, ignore_cache: ignoreCache }
         : {
-          dashboardId: dashcard.dashboard_id,
-          dashcardId: dashcard.id,
-          cardId: card.id,
-          parameters: datasetQuery.parameters,
-          ignore_cache: ignoreCache,
-          dashboard_id: dashcard.dashboard_id,
-          dashboard_load_id: dashboardLoadId,
-        };
+            dashboardId: dashcard.dashboard_id,
+            dashcardId: dashcard.id,
+            cardId: card.id,
+            parameters: datasetQuery.parameters,
+            ignore_cache: ignoreCache,
+            dashboard_id: dashcard.dashboard_id,
+            dashboard_load_id: dashboardLoadId,
+          };
 
       result = await fetchDataOrError(
         maybeUsePivotEndpoint(endpoint, card)(requestBody, queryOptions),
@@ -390,96 +390,96 @@ export const fetchCardData =
     dashcard: FetchCardDataActionArgs["dashcard"],
     options: FetchCardDataActionArgs["options"] = {},
   ) =>
-    async (dispatch: Dispatch) => {
-      await dispatch(
-        fetchCardDataAction({
-          card,
-          dashcard,
-          options,
-        }),
-      );
-    };
+  async (dispatch: Dispatch) => {
+    await dispatch(
+      fetchCardDataAction({
+        card,
+        dashcard,
+        options,
+      }),
+    );
+  };
 
 export const fetchDashboardCardData =
   ({ isRefreshing = false, reload = false, clearCache = false } = {}) =>
-    (dispatch: Dispatch, getState: GetState) => {
-      const dashboard = getDashboardComplete(getState());
-      if (!dashboard) {
-        return;
-      }
+  (dispatch: Dispatch, getState: GetState) => {
+    const dashboard = getDashboardComplete(getState());
+    if (!dashboard) {
+      return;
+    }
 
-      const selectedTabId = getSelectedTabId(getState());
-      const dashboardLoadId = uuid();
-      const loadingIds = getLoadingDashCards(getState()).loadingIds;
-      const nonVirtualDashcards = getCurrentTabDashboardCards(
-        dashboard,
-        selectedTabId,
-      ).filter(({ dashcard }) => !isVirtualDashCard(dashcard));
+    const selectedTabId = getSelectedTabId(getState());
+    const dashboardLoadId = uuid();
+    const loadingIds = getLoadingDashCards(getState()).loadingIds;
+    const nonVirtualDashcards = getCurrentTabDashboardCards(
+      dashboard,
+      selectedTabId,
+    ).filter(({ dashcard }) => !isVirtualDashCard(dashcard));
 
-      let nonVirtualDashcardsToFetch = [];
-      if (isRefreshing) {
-        nonVirtualDashcardsToFetch = nonVirtualDashcards.filter(
-          ({ dashcard }) => {
-            return !loadingIds.includes(dashcard.id);
-          },
-        );
-        const newLoadingIds = nonVirtualDashcardsToFetch.map(({ dashcard }) => {
-          return dashcard.id;
-        });
-
-        dispatch(
-          fetchDashboardCardDataAction({
-            currentTime: performance.now(),
-            loadingIds: loadingIds.concat(newLoadingIds),
-          }),
-        );
-      } else {
-        nonVirtualDashcardsToFetch = nonVirtualDashcards;
-        const newLoadingIds = nonVirtualDashcardsToFetch.map(({ dashcard }) => {
-          return dashcard.id;
-        });
-
-        for (const id of loadingIds) {
-          const dashcard = getDashCardById(getState(), id);
-          dispatch(cancelFetchCardData(dashcard.card.id, dashcard.id));
-        }
-
-        dispatch(
-          fetchDashboardCardDataAction({
-            currentTime: performance.now(),
-            loadingIds: newLoadingIds,
-          }),
-        );
-      }
-
-      const promises = nonVirtualDashcardsToFetch.map(
-        async ({ card, dashcard }) => {
-          await dispatch(
-            // TODO: fix the return type of getAllDashboardCards to make sure
-            // that the relationship between a dashcard and its card
-            // is actually reflected in the type system
-            fetchCardData(card as Card, dashcard, {
-              reload,
-              clearCache,
-              dashboardLoadId,
-            }),
-          );
-          await dispatch(updateLoadingTitle(nonVirtualDashcardsToFetch.length));
+    let nonVirtualDashcardsToFetch = [];
+    if (isRefreshing) {
+      nonVirtualDashcardsToFetch = nonVirtualDashcards.filter(
+        ({ dashcard }) => {
+          return !loadingIds.includes(dashcard.id);
         },
       );
+      const newLoadingIds = nonVirtualDashcardsToFetch.map(({ dashcard }) => {
+        return dashcard.id;
+      });
 
-      if (nonVirtualDashcardsToFetch.length > 0) {
-        dispatch(
-          setDocumentTitle(t`0/${nonVirtualDashcardsToFetch.length} loaded`),
-        );
+      dispatch(
+        fetchDashboardCardDataAction({
+          currentTime: performance.now(),
+          loadingIds: loadingIds.concat(newLoadingIds),
+        }),
+      );
+    } else {
+      nonVirtualDashcardsToFetch = nonVirtualDashcards;
+      const newLoadingIds = nonVirtualDashcardsToFetch.map(({ dashcard }) => {
+        return dashcard.id;
+      });
 
-        // TODO: There is a race condition here, when refreshing a dashboard before
-        // the previous API calls finished.
-        return Promise.all(promises).then(() => {
-          dispatch(loadingComplete());
-        });
+      for (const id of loadingIds) {
+        const dashcard = getDashCardById(getState(), id);
+        dispatch(cancelFetchCardData(dashcard.card.id, dashcard.id));
       }
-    };
+
+      dispatch(
+        fetchDashboardCardDataAction({
+          currentTime: performance.now(),
+          loadingIds: newLoadingIds,
+        }),
+      );
+    }
+
+    const promises = nonVirtualDashcardsToFetch.map(
+      async ({ card, dashcard }) => {
+        await dispatch(
+          // TODO: fix the return type of getAllDashboardCards to make sure
+          // that the relationship between a dashcard and its card
+          // is actually reflected in the type system
+          fetchCardData(card as Card, dashcard, {
+            reload,
+            clearCache,
+            dashboardLoadId,
+          }),
+        );
+        await dispatch(updateLoadingTitle(nonVirtualDashcardsToFetch.length));
+      },
+    );
+
+    if (nonVirtualDashcardsToFetch.length > 0) {
+      dispatch(
+        setDocumentTitle(t`0/${nonVirtualDashcardsToFetch.length} loaded`),
+      );
+
+      // TODO: There is a race condition here, when refreshing a dashboard before
+      // the previous API calls finished.
+      return Promise.all(promises).then(() => {
+        dispatch(loadingComplete());
+      });
+    }
+  };
 
 export const reloadDashboardCards =
   () => async (dispatch: Dispatch, getState: GetState) => {
@@ -593,6 +593,30 @@ const dashboardSchema = new schema.Entity("dashboard", {
 });
 
 let fetchDashboardCancellation: Deferred | null;
+
+function getLyricScenarioFieldId(param_fields: any, cardTableId: any) {
+  let lyricScenarioFieldId: number | undefined = undefined;
+
+  if (!param_fields) {
+    return null;
+  }
+
+  for (const key in param_fields) {
+    if (
+      param_fields[key].name === "lyric_scenario_id" &&
+      param_fields[key].table_id === cardTableId
+    ) {
+      lyricScenarioFieldId = param_fields[key].id;
+      break;
+    }
+  }
+
+  if (lyricScenarioFieldId === undefined) {
+    return undefined;
+  }
+
+  return lyricScenarioFieldId;
+}
 
 export const fetchDashboard = createAsyncThunk(
   "metabase/dashboard/FETCH_DASHBOARD",
@@ -742,47 +766,29 @@ export const fetchDashboard = createAsyncThunk(
       const parameterValuesById = preserveParameters
         ? getParameterValues(getState())
         : getParameterValuesByIdFromQueryParams(
-          parameters,
-          queryParams,
-          lastUsedParametersValues,
-        );
+            parameters,
+            queryParams,
+            lastUsedParametersValues,
+          );
 
       entities = entities ?? normalize(result, dashboardSchema).entities;
 
-
-      function getLyricScenarioFieldId(param_fields: any, cardTableId: any) {
-
-        let lyricScenarioFieldId: number | undefined = undefined;
-
-        if (!param_fields) {
-          return null;
-        }
-
-        for (const key in param_fields) {
-          if (param_fields[key].name === "lyric_scenario_id" && param_fields[key].table_id === cardTableId) {
-            lyricScenarioFieldId = param_fields[key].id;
-            break;
-          }
-        }
-
-        if (lyricScenarioFieldId === undefined) {
-          return undefined;
-        }
-
-        return lyricScenarioFieldId;
-      }
-
       // put call for cards which have source-query and not have lyric_scenario_id
-
       if (result?.dashcards) {
         const dashcardPromises = result.dashcards.map(async (dashcard: any) => {
-          const sourceQuery = dashcard?.card?.dataset_query?.query?.["source-query"];
-          const lyricScenarioFieldId = getLyricScenarioFieldId(result.param_fields, dashcard.card?.table_id);
-          console.log("lyricScenarioFieldId: ", lyricScenarioFieldId);
+          const sourceQuery =
+            dashcard?.card?.dataset_query?.query?.["source-query"];
+          const lyricScenarioFieldId = getLyricScenarioFieldId(
+            result.param_fields,
+            dashcard.card?.table_id,
+          );
 
           if (sourceQuery && Array.isArray(sourceQuery.breakout)) {
             const isFieldAlreadyInBreakout = sourceQuery.breakout.some(
-              (item: any) => Array.isArray(item) && item[0] === "field" && item[1] === lyricScenarioFieldId
+              (item: any) =>
+                Array.isArray(item) &&
+                item[0] === "field" &&
+                item[1] === lyricScenarioFieldId,
             );
 
             if (!isFieldAlreadyInBreakout) {
@@ -797,18 +803,20 @@ export const fetchDashboard = createAsyncThunk(
                         ...sourceQuery,
                         breakout: [
                           ...sourceQuery.breakout,
-                          ["field", lyricScenarioFieldId, { "base-type": "type/Text" }]
-                        ]
-                      }
-                    }
-                  }
+                          [
+                            "field",
+                            lyricScenarioFieldId,
+                            { "base-type": "type/Text" },
+                          ],
+                        ],
+                      },
+                    },
+                  },
                 };
 
                 const updatedCard = await CardApi.update(cardToUpdate);
-                console.log("Card update response:", updatedCard);
                 return { ...dashcard, card: updatedCard };
               } catch (error) {
-                console.error("Failed to update card:", error);
                 return dashcard;
               }
             } else {
@@ -821,8 +829,6 @@ export const fetchDashboard = createAsyncThunk(
 
         result.dashcards = await Promise.all(dashcardPromises);
       }
-
-      console.log("response: ", result);
 
       return {
         entities,

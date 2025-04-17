@@ -14,6 +14,7 @@ import { copy } from "metabase/lib/utils";
 import { loadMetadataForCard } from "metabase/questions/actions";
 import { openUrl } from "metabase/redux/app";
 import { getMetadata } from "metabase/selectors/metadata";
+import { CardApi } from "metabase/services";
 import { getCardAfterVisualizationClick } from "metabase/visualizations/lib/utils";
 import * as Lib from "metabase-lib";
 import Question from "metabase-lib/v1/Question";
@@ -50,7 +51,6 @@ import { onCloseSidebars } from "../ui";
 import { loadCard } from "./card";
 import { API_UPDATE_QUESTION, SOFT_RELOAD_CARD } from "./types";
 import { updateQuestion } from "./updateQuestion";
-import { CardApi } from "metabase/services";
 
 export const RESET_QB = "metabase/qb/RESET_QB";
 export const resetQB = createAction(RESET_QB);
@@ -136,10 +136,10 @@ export const setCardAndRun = (
 
     const originalCard = card.original_card_id
       ? // If the original card id is present, dynamically load its information for showing lineage
-      await loadCard(card.original_card_id, { dispatch, getState })
+        await loadCard(card.original_card_id, { dispatch, getState })
       : // Otherwise, use a current card as the original card if the card has been saved
-      // This is needed for checking whether the card is in dirty state or not
-      card.id
+        // This is needed for checking whether the card is in dirty state or not
+        card.id
         ? card
         : null;
 
@@ -217,9 +217,59 @@ export const setDatasetQuery =
   };
 
 export const API_CREATE_QUESTION = "metabase/qb/API_CREATE_QUESTION";
+
+async function updateCardWithLyricScenarioId(card: any, metaData: any) {
+  const metadataTablesObj = (metaData as any)?.payload?.entities?.tables;
+  const tableId = (card as any)["table_id"];
+
+  let cardsTableObj = undefined;
+
+  for (const key in metadataTablesObj) {
+    if (metadataTablesObj[key]?.id === tableId) {
+      cardsTableObj = metadataTablesObj[key];
+      break;
+    }
+  }
+
+  const lyricScenarioId = cardsTableObj?.original_fields?.find(
+    (field: any) => field.name === "lyric_scenario_id",
+  )?.id;
+  const sourceQuery = (card as any)?.dataset_query?.query?.["source-query"];
+  const isFieldAlreadyInBreakout = sourceQuery?.breakout?.some(
+    (item: any) =>
+      Array.isArray(item) && item[0] === "field" && item[1] === lyricScenarioId,
+  );
+
+  if (
+    sourceQuery &&
+    Array.isArray(sourceQuery.breakout) &&
+    !isFieldAlreadyInBreakout &&
+    lyricScenarioId
+  ) {
+    const updatedCardWithLyricScenarioId = {
+      ...card,
+      dataset_query: {
+        ...card.dataset_query,
+        query: {
+          ...(card as any).dataset_query.query,
+          "source-query": {
+            ...sourceQuery,
+            breakout: [
+              ...sourceQuery.breakout,
+              ["field", lyricScenarioId, { "base-type": "type/Text" }],
+            ],
+          },
+        },
+      },
+    };
+
+    const updatedCard = await CardApi.update(updatedCardWithLyricScenarioId);
+    return updatedCard;
+  }
+}
+
 export const apiCreateQuestion = (question: Question) => {
   return async (dispatch: Dispatch, getState: GetState) => {
-    console.log('apiCreateQuestion');
     const submittableQuestion = getSubmittableQuestion(getState(), question);
     const createdQuestion = await reduxCreateQuestion(
       submittableQuestion,
@@ -244,53 +294,7 @@ export const apiCreateQuestion = (question: Question) => {
 
     const metadataResponse = await dispatch(loadMetadataForCard(card));
 
-    const metadataTablesObj = (metadataResponse as any)?.payload?.entities?.tables;
-    console.log('metadataTablesObj', metadataTablesObj);
-    const tableId = (card as any)["table_id"];
-    console.log('tableId', tableId);
-    let cardsTableObj = undefined;
-
-    for (const key in metadataTablesObj) {
-      if (metadataTablesObj[key]?.id === tableId) {
-        cardsTableObj = metadataTablesObj[key];
-        break;
-      }
-    }
-
-    console.log('cardsTableObj', cardsTableObj);
-
-    const lyricScenarioId = cardsTableObj?.original_fields?.find((field: any) => field.name === "lyric_scenario_id")?.id;
-    console.log('lyricScenarioId', lyricScenarioId);
-
-    const sourceQuery = (card as any)?.dataset_query?.query?.["source-query"];
-    console.log('sourceQuery', sourceQuery);
-
-    const isFieldAlreadyInBreakout = sourceQuery?.breakout?.some((item: any) => Array.isArray(item) && item[0] === "field" && item[1] === lyricScenarioId);
-
-    if (sourceQuery && Array.isArray(sourceQuery.breakout) && !isFieldAlreadyInBreakout && lyricScenarioId) {
-      const updatedCardWithLyricScenarioId = {
-        ...card,
-        dataset_query: {
-          ...card.dataset_query,
-          query: {
-            ...(card as any).dataset_query.query,
-            "source-query": {
-              ...sourceQuery,
-              breakout: [
-                ...sourceQuery.breakout,
-                ["field", lyricScenarioId, { "base-type": "type/Text" }]
-              ]
-            }
-          }
-        }
-      };
-
-      console.log('updatedCardWithLyricScenarioId', updatedCardWithLyricScenarioId);
-
-      await CardApi.update(updatedCardWithLyricScenarioId);
-    }
-
-
+    await updateCardWithLyricScenarioId(card, metadataResponse);
 
     const isModel = question.type() === "model";
     const isMetric = question.type() === "metric";
@@ -342,58 +346,21 @@ export const apiUpdateQuestion = (
     // (some of the old alerts might be removed during update)
     await dispatch(fetchAlertsForQuestion(updatedQuestion.id()));
 
-    const metadataResponse = await dispatch(loadMetadataForCard(question.card()));
+    const metadataResponse = await dispatch(
+      loadMetadataForCard(question.card()),
+    );
 
     /* Adding the lyric scenario id to the question */
     const updatedCard = updatedQuestion.card();
-    const tableId = (updatedCard as any)["table_id"];
-    console.log('tableId', tableId);
-    const metadataTablesObj = (metadataResponse as any)?.payload?.entities?.tables;
-    console.log('metadataTablesObj', metadataTablesObj);
-    let cardsTableObj = undefined;
 
-    for (const key in metadataTablesObj) {
-      if (metadataTablesObj[key]?.id === tableId) {
-        cardsTableObj = metadataTablesObj[key];
-        break;
-      }
-    }
+    const updatedCardResponse = await updateCardWithLyricScenarioId(
+      updatedCard,
+      metadataResponse,
+    );
 
-    console.log('cardsTableObj', cardsTableObj);
-
-    const lyricScenarioId = cardsTableObj?.original_fields?.find((field: any) => field.name === "lyric_scenario_id")?.id;
-    console.log('lyricScenarioId', lyricScenarioId);
-
-    console.log('updatedCard', updatedCard);
-
-    const sourceQuery = (updatedCard as any)?.dataset_query?.query?.["source-query"];
-    console.log('sourceQuery', sourceQuery);
-
-    const isFieldAlreadyInBreakout = sourceQuery?.breakout?.some((item: any) => Array.isArray(item) && item[0] === "field" && item[1] === lyricScenarioId);
-
-    if (sourceQuery && Array.isArray(sourceQuery.breakout) && !isFieldAlreadyInBreakout && lyricScenarioId) {
-      const updatedCardWithLyricScenarioId = {
-        ...updatedCard,
-        dataset_query: {
-          ...updatedCard.dataset_query,
-          query: {
-            ...(updatedCard as any).dataset_query.query, "source-query": {
-              ...sourceQuery,
-              breakout: [
-                ...sourceQuery.breakout,
-                ["field", lyricScenarioId, { "base-type": "type/Text" }]
-              ]
-            }
-          }
-        }
-      }
-      console.log('updatedCardWithLyricScenarioId', updatedCardWithLyricScenarioId);
-      const updatedCardResponse = await CardApi.update(updatedCardWithLyricScenarioId);
-      console.log("updated response: ", updatedCardResponse);
+    if (updatedCardResponse) {
       updatedQuestion = updatedQuestion.setCard(updatedCardResponse);
-      console.log("Updated question: ", updatedQuestion.card());
     }
-    /* End of adding the lyric scenario id to the question */
 
     await dispatch({
       type: API_UPDATE_QUESTION,
