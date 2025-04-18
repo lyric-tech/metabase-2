@@ -1,6 +1,7 @@
 import { createAction } from "@reduxjs/toolkit";
 import type { Query } from "history";
 import { getIn } from "icepick";
+import produce from "immer";
 import { denormalize, normalize, schema } from "normalizr";
 import { match } from "ts-pattern";
 import { t } from "ttag";
@@ -594,6 +595,26 @@ const dashboardSchema = new schema.Entity("dashboard", {
 
 let fetchDashboardCancellation: Deferred | null;
 
+function getLyricScenarioFieldId(param_fields: any, cardTableId: any) {
+  let lyricScenarioFieldId: number | undefined = undefined;
+
+  if (!param_fields) {
+    return null;
+  }
+
+  for (const key in param_fields) {
+    if (
+      param_fields[key].name === "lyric_scenario_id" &&
+      param_fields[key].table_id === cardTableId
+    ) {
+      lyricScenarioFieldId = param_fields[key].id;
+      break;
+    }
+  }
+
+  return lyricScenarioFieldId;
+}
+
 export const fetchDashboard = createAsyncThunk(
   "metabase/dashboard/FETCH_DASHBOARD",
   async (
@@ -748,6 +769,51 @@ export const fetchDashboard = createAsyncThunk(
           );
 
       entities = entities ?? normalize(result, dashboardSchema).entities;
+
+      // put call for cards which have source-query and not have lyric_scenario_id
+      if (result?.dashcards) {
+        const dashcardPromises = result.dashcards.map(async (dashcard: any) => {
+          const sourceQuery =
+            dashcard?.card?.dataset_query?.query?.["source-query"];
+          const lyricScenarioFieldId = getLyricScenarioFieldId(
+            result.param_fields,
+            dashcard.card?.table_id,
+          );
+
+          if (sourceQuery && Array.isArray(sourceQuery.breakout)) {
+            const isFieldAlreadyInBreakout = sourceQuery.breakout.some(
+              (item: any) =>
+                Array.isArray(item) &&
+                item[0] === "field" &&
+                item[1] === lyricScenarioFieldId,
+            );
+
+            if (!isFieldAlreadyInBreakout) {
+              try {
+                const card = dashcard.card;
+                const cardToUpdate = produce(card, (draft: any) => {
+                  draft.dataset_query.query["source-query"].breakout.push([
+                    "field",
+                    lyricScenarioFieldId,
+                    { "base-type": "type/Text" },
+                  ]);
+                });
+
+                const updatedCard = await CardApi.update(cardToUpdate);
+                return { ...dashcard, card: updatedCard };
+              } catch (error) {
+                return dashcard;
+              }
+            } else {
+              return dashcard;
+            }
+          } else {
+            return dashcard;
+          }
+        });
+
+        result.dashcards = await Promise.all(dashcardPromises);
+      }
 
       return {
         entities,
