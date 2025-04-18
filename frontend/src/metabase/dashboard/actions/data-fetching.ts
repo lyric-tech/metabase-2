@@ -1,6 +1,7 @@
 import { createAction } from "@reduxjs/toolkit";
 import type { Query } from "history";
 import { getIn } from "icepick";
+import produce from "immer";
 import { denormalize, normalize, schema } from "normalizr";
 import { match } from "ts-pattern";
 import { t } from "ttag";
@@ -611,10 +612,6 @@ function getLyricScenarioFieldId(param_fields: any, cardTableId: any) {
     }
   }
 
-  if (lyricScenarioFieldId === undefined) {
-    return undefined;
-  }
-
   return lyricScenarioFieldId;
 }
 
@@ -793,26 +790,14 @@ export const fetchDashboard = createAsyncThunk(
 
             if (!isFieldAlreadyInBreakout) {
               try {
-                const cardToUpdate = {
-                  ...dashcard.card,
-                  dataset_query: {
-                    ...dashcard.card.dataset_query,
-                    query: {
-                      ...dashcard.card.dataset_query.query,
-                      "source-query": {
-                        ...sourceQuery,
-                        breakout: [
-                          ...sourceQuery.breakout,
-                          [
-                            "field",
-                            lyricScenarioFieldId,
-                            { "base-type": "type/Text" },
-                          ],
-                        ],
-                      },
-                    },
-                  },
-                };
+                const card = dashcard.card;
+                const cardToUpdate = produce(card, (draft: any) => {
+                  draft.dataset_query.query["source-query"].breakout.push([
+                    "field",
+                    lyricScenarioFieldId,
+                    { "base-type": "type/Text" },
+                  ]);
+                });
 
                 const updatedCard = await CardApi.update(cardToUpdate);
                 return { ...dashcard, card: updatedCard };

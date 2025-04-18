@@ -1,3 +1,4 @@
+import produce from "immer";
 import { createAction } from "redux-actions";
 import _ from "underscore";
 
@@ -246,22 +247,13 @@ async function updateCardWithLyricScenarioId(card: any, metaData: any) {
     !isFieldAlreadyInBreakout &&
     lyricScenarioId
   ) {
-    const updatedCardWithLyricScenarioId = {
-      ...card,
-      dataset_query: {
-        ...card.dataset_query,
-        query: {
-          ...(card as any).dataset_query.query,
-          "source-query": {
-            ...sourceQuery,
-            breakout: [
-              ...sourceQuery.breakout,
-              ["field", lyricScenarioId, { "base-type": "type/Text" }],
-            ],
-          },
-        },
-      },
-    };
+    const updatedCardWithLyricScenarioId = produce(card, (draft: any) => {
+      draft.dataset_query.query["source-query"].breakout.push([
+        "field",
+        lyricScenarioId,
+        { "base-type": "type/Text" },
+      ]);
+    });
 
     const updatedCard = await CardApi.update(updatedCardWithLyricScenarioId);
     return updatedCard;
