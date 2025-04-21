@@ -1,6 +1,7 @@
 import { useMemo } from "react";
 import { t } from "ttag";
 
+import { LYRIC_SCENARIO_ID_COLUMN_NAME } from "metabase/common/constants";
 import { getColumnGroupIcon } from "metabase/common/utils/column-groups";
 import {
   HoverParent,
@@ -80,7 +81,8 @@ export function FilterColumnPicker({
           stageIndex,
         }))
         ?.filter(
-          columnItem => !columnItem.displayName.includes("Lyric Scenario ID"),
+          columnItem =>
+            !columnItem.displayName.includes(LYRIC_SCENARIO_ID_COLUMN_NAME),
         );
 
       const includeSegments = groupInfo.isSourceTable;

@@ -1,11 +1,13 @@
 /* eslint-disable react/prop-types */
 import cx from "classnames";
+import produce from "immer";
 import { PureComponent } from "react";
 import { connect } from "react-redux";
 import { t } from "ttag";
 import _ from "underscore";
 
 import ErrorBoundary from "metabase/ErrorBoundary";
+import { LYRIC_SCENARIO_ID_COLUMN_NAME } from "metabase/common/constants";
 import { SmallGenericError } from "metabase/components/ErrorPages";
 import ExplicitSize from "metabase/components/ExplicitSize";
 import CS from "metabase/css/core/index.css";
@@ -454,6 +456,14 @@ class Visualization extends PureComponent {
         (loading || error || noResults || isHeaderEnabled)) ||
       (replacementContent && (dashcard.size_y !== 1 || isMobile) && !isAction);
 
+    const seriesWithoutLyricScenarioId = produce(series, draft => {
+      draft?.forEach(item => {
+        item.data.cols = item.data?.cols?.filter(
+          column => column?.display_name !== LYRIC_SCENARIO_ID_COLUMN_NAME,
+        );
+      });
+    });
+
     return (
       <ErrorBoundary onError={this.onErrorBoundaryError}>
         <VisualizationRoot
@@ -464,7 +474,7 @@ class Visualization extends PureComponent {
           {!!hasHeader && (
             <VisualizationHeader>
               <ChartCaption
-                series={series}
+                series={seriesWithoutLyricScenarioId}
                 settings={settings}
                 icon={headerIcon}
                 actionButtons={extra}
@@ -495,7 +505,10 @@ class Visualization extends PureComponent {
             <LoadingView expectedDuration={expectedDuration} isSlow={isSlow} />
           ) : (
             <div
-              data-card-key={getCardKey(series[0].card?.id)}
+              // data-card-key={getCardKey(series[0].card?.id)}
+              data-card-key={getCardKey(
+                seriesWithoutLyricScenarioId[0].card?.id,
+              )}
               className={cx(CS.flex, CS.flexColumn, CS.flexFull)}
             >
               <CardVisualization
@@ -508,10 +521,10 @@ class Visualization extends PureComponent {
                 )}
                 isPlaceholder={isPlaceholder}
                 isMobile={isMobile}
-                series={series}
+                series={seriesWithoutLyricScenarioId}
                 settings={settings}
-                card={series[0].card} // convenience for single-series visualizations
-                data={series[0].data} // convenience for single-series visualizations
+                card={seriesWithoutLyricScenarioId[0].card}
+                data={seriesWithoutLyricScenarioId[0].data}
                 hovered={hovered}
                 clicked={clicked}
                 headerIcon={hasHeader ? null : headerIcon}
@@ -531,7 +544,11 @@ class Visualization extends PureComponent {
               />
             </div>
           )}
-          <ChartTooltip series={series} hovered={hovered} settings={settings} />
+          <ChartTooltip
+            series={seriesWithoutLyricScenarioId}
+            hovered={hovered}
+            settings={settings}
+          />
           {this.props.onChangeCardAndRun && (
             <ConnectedClickActionsPopover
               clicked={clicked}
@@ -539,7 +556,7 @@ class Visualization extends PureComponent {
               onChangeCardAndRun={this.handleOnChangeCardAndRun}
               onUpdateQuestion={this.props.onUpdateQuestion}
               onClose={this.hideActions}
-              series={series}
+              series={seriesWithoutLyricScenarioId}
               onUpdateVisualizationSettings={onUpdateVisualizationSettings}
             />
           )}

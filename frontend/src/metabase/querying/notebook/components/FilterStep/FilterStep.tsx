@@ -2,6 +2,7 @@ import { useMemo } from "react";
 import { t } from "ttag";
 
 import ErrorBoundary from "metabase/ErrorBoundary";
+import { LYRIC_SCENARIO_ID_COLUMN_NAME } from "metabase/common/constants";
 import { FilterPicker } from "metabase/querying/filters/components/FilterPicker";
 import * as Lib from "metabase-lib";
 
@@ -63,7 +64,7 @@ export function FilterStep({
 
   const filtersWithoutLyricScenarioId = filters?.filter(filterItem => {
     const filterName = renderFilterName(filterItem);
-    if (filterName?.includes("Lyric Scenario ID")) {
+    if (filterName?.includes(LYRIC_SCENARIO_ID_COLUMN_NAME)) {
       return false;
     }
     return true;
