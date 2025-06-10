@@ -36,6 +36,7 @@ export function DashboardSharingMenu({ dashboard }: { dashboard: Dashboard }) {
     dashboard.collection && isInstanceAnalyticsCollection(dashboard.collection);
 
   const canShare = !isAnalytics;
+  const showPublicLinkMenuItem = false;
 
   if (isArchived) {
     return null;
@@ -52,10 +53,14 @@ export function DashboardSharingMenu({ dashboard }: { dashboard: Dashboard }) {
         {!!canShare && (
           <>
             <Menu.Divider />
-            <PublicLinkMenuItem
-              hasPublicLink={hasPublicLink}
-              onClick={() => setModalType("dashboard-public-link")}
-            />
+
+            {showPublicLinkMenuItem && (
+              <PublicLinkMenuItem
+                hasPublicLink={hasPublicLink}
+                onClick={() => setModalType("dashboard-public-link")}
+              />
+            )}
+
             <EmbedMenuItem onClick={() => setModalType("dashboard-embed")} />
           </>
         )}
