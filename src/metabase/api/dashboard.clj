@@ -499,8 +499,7 @@
   [dash-before-update dash-updates]
   (when (or (api/column-will-change? :enable_embedding dash-before-update dash-updates)
             (api/column-will-change? :embedding_params dash-before-update dash-updates))
-    (validation/check-embedding-enabled)
-    (api/check-superuser)))
+    (validation/check-embedding-enabled))) ; Custom fix for lyric: remove admin user check for dashboard filter update.
 
 (api/defendpoint DELETE "/:id"
   "Hard delete a Dashboard. To soft delete, use `PUT /api/dashboard/:id`
