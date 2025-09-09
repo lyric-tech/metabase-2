@@ -1,5 +1,6 @@
 import { useMemo, useState } from "react";
 
+import { LYRIC_SCENARIO_ID_COLUMN_NAME } from "metabase/common/constants";
 import { Popover } from "metabase/ui";
 import * as Lib from "metabase-lib";
 
@@ -36,7 +37,7 @@ export function FilterPanelPopover({
     setIsOpened(false);
   };
 
-  if (filterInfo.longDisplayName?.includes("Lyric Scenario ID")) {
+  if (filterInfo.longDisplayName?.includes(LYRIC_SCENARIO_ID_COLUMN_NAME)) {
     return null;
   }
 

@@ -1,6 +1,7 @@
 import { type ChangeEvent, useCallback, useMemo, useState } from "react";
 import { t } from "ttag";
 
+import { LYRIC_SCENARIO_ID_COLUMN_NAME } from "metabase/common/constants";
 import Input from "metabase/core/components/Input";
 import { useDebouncedValue } from "metabase/hooks/use-debounced-value";
 import { SEARCH_DEBOUNCE_DURATION } from "metabase/lib/constants";
@@ -42,7 +43,9 @@ export function BreakoutColumnList({
       breakouts
         .slice(0, pinnedItemCount)
         .map(breakout => getBreakoutListItem(query, stageIndex, breakout))
-        .filter(item => !item.displayName.includes("Lyric Scenario ID")),
+        .filter(
+          item => !item.displayName.includes(LYRIC_SCENARIO_ID_COLUMN_NAME),
+        ),
     [query, stageIndex, breakouts, pinnedItemCount],
   );
 
@@ -228,7 +231,9 @@ function getColumnSections(
       .flatMap(column =>
         getColumnListItems(query, stageIndex, breakouts, column),
       )
-      ?.filter(item => !item.displayName.includes("Lyric Scenario ID"));
+      ?.filter(
+        item => !item.displayName.includes(LYRIC_SCENARIO_ID_COLUMN_NAME),
+      );
 
     return {
       name: groupInfo.displayName,

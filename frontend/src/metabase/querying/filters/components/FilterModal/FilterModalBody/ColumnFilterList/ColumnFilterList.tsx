@@ -1,5 +1,6 @@
 import { useMemo } from "react";
 
+import { LYRIC_SCENARIO_ID_COLUMN_NAME } from "metabase/common/constants";
 import type { ColumnItem } from "metabase/querying/filters/hooks/use-filter-modal";
 import type * as Lib from "metabase-lib";
 
@@ -27,7 +28,10 @@ export const ColumnFilterList = ({
   return (
     <>
       {sortedItems
-        .filter(columnItem => columnItem.displayName !== "Lyric Scenario ID")
+        .filter(
+          columnItem =>
+            columnItem.displayName !== LYRIC_SCENARIO_ID_COLUMN_NAME,
+        )
         ?.map((columnItem, columnIndex) => (
           <ColumnFilterGroup
             key={columnIndex}

@@ -2,6 +2,7 @@ import { useMemo } from "react";
 import { t } from "ttag";
 
 import { QueryColumnPicker } from "metabase/common/components/QueryColumnPicker";
+import { LYRIC_SCENARIO_ID_COLUMN_NAME } from "metabase/common/constants";
 import { Icon } from "metabase/ui";
 import * as Lib from "metabase-lib";
 
@@ -118,7 +119,7 @@ const SortPopover = ({
     const filteredColumns = columns.filter(column => {
       const columnInfo = Lib.displayInfo(query, stageIndex, column);
       // hide 'Lyric Scenario ID' column option from the add filter popover
-      if (columnInfo?.displayName.includes("Lyric Scenario ID")) {
+      if (columnInfo?.displayName.includes(LYRIC_SCENARIO_ID_COLUMN_NAME)) {
         return false;
       }
       const isAlreadyUsed = columnInfo.orderByPosition != null;
