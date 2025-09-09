@@ -123,8 +123,8 @@ export const useClickedStateTooltipSync = (
 ) => {
   useEffect(
     function toggleTooltip() {
-      const isTooltipEnabled = clicked == null;
-      chart?.setOption({ tooltip: { show: isTooltipEnabled } }, false);
+      // const isTooltipEnabled = clicked == null;
+      chart?.setOption({ tooltip: { show: true } }, false);
     },
     [chart, clicked],
   );
