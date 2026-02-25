@@ -11,6 +11,7 @@ import type {
   OpenSteps,
 } from "../../types";
 import { NotebookStep } from "../NotebookStep";
+import { processSteps } from "./helpers";
 
 interface NotebookStepListProps {
   className?: string;
@@ -55,7 +56,8 @@ export function NotebookStepList({
     if (!question) {
       return [];
     }
-    return getQuestionSteps(question, metadata, openSteps);
+    const initialSteps =  getQuestionSteps(question, metadata, openSteps) ?? [];
+    return processSteps(initialSteps);
   }, [metadata, question, openSteps]);
 
   const handleStepOpen = useCallback((id: INotebookStep["id"]) => {

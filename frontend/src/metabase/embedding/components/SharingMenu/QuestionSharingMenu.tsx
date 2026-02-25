@@ -88,7 +88,7 @@ export function QuestionSharingMenu({ question }: { question: Question }) {
 
   return (
     <Flex>
-      <SharingMenu>
+      {/* <SharingMenu>
         <PublicLinkMenuItem
           hasPublicLink={hasPublicLink}
           onClick={() => setModalType("question-public-link")}
@@ -96,7 +96,7 @@ export function QuestionSharingMenu({ question }: { question: Question }) {
         <EmbedMenuItem
           onClick={() => setModalType(GUEST_EMBED_EMBEDDING_TYPE)}
         />
-      </SharingMenu>
+      </SharingMenu> */}
       <PublicLinkModals
         modalType={modalType}
         question={question}

@@ -74,19 +74,10 @@ function LastEditInfoLabel({
   tooltipProps.label ??= timestamp ? <DateTime value={timestamp} /> : null;
 
   if (!children) {
-    if (prefix) {
-      // FIXME: The following two strings won't correctly translate.
-      if (editorFullName) {
-        children = `${prefix} ${timeLabel} by ${editorFullName}`;
-      } else {
-        children = `${prefix} ${timeLabel}`;
-      }
+    if (prefix) {      
+      children = `${prefix} ${timeLabel}`;
     } else {
-      if (editorFullName) {
-        children = t`Edited ${timeLabel} by ${editorFullName}`;
-      } else {
-        children = t`Edited ${timeLabel}`;
-      }
+      children = t`Edited ${timeLabel}`;     
     }
   }
 
@@ -97,7 +88,7 @@ function LastEditInfoLabel({
           className={className}
           fz="sm"
           fw="bold"
-          onClick={onClick}
+          // onClick={onClick}
           data-testid="revision-history-button"
         >
           {children}
@@ -109,6 +100,7 @@ function LastEditInfoLabel({
           fw="bold"
           c="text-secondary"
           data-testid="revision-history-text"
+     
         >
           {children}
         </Text>

@@ -154,7 +154,7 @@ function QuestionTableBadges({
   const parts = tables.map((table) => (
     <HeadBreadcrumbs.Badge
       key={table.id}
-      to={hasLink ? getTableURL(table) : ""}
+      // to={hasLink ? getTableURL(table) : ""}
       inactiveColor={badgeInactiveColor}
     >
       <span>

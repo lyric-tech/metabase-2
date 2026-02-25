@@ -7,6 +7,7 @@ import * as Lib from "metabase-lib";
 
 import type { NotebookStepProps } from "../../types";
 import { ClauseStep } from "../ClauseStep";
+import { LYRIC_CONSTANTS } from "../../../../../lyric-constants";
 
 export function FilterStep({
   query,
@@ -62,10 +63,18 @@ export function FilterStep({
     updateQuery(nextQuery);
   };
 
+  const filtersWithoutLyricScenarioId = filters?.filter(filterItem => {
+    const filterName = renderFilterName(filterItem);
+    if (filterName?.includes(LYRIC_CONSTANTS.LYRIC_SCENARIO_ID_LABEL)) {
+      return false;
+    }
+    return true;
+  });
+
   return (
     <ErrorBoundary>
       <ClauseStep
-        items={filters}
+        items={filtersWithoutLyricScenarioId}
         initialAddText={t`Add filters to narrow your answer`}
         readOnly={readOnly}
         color={color}

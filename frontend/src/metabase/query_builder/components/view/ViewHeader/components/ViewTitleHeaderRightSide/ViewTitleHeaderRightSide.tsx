@@ -199,10 +199,10 @@ export function ViewTitleHeaderRightSide({
           setQueryBuilderMode={setQueryBuilderMode}
         />
       )}
-      {ToggleNativeQueryPreview.shouldRender({
+      {/* {ToggleNativeQueryPreview.shouldRender({
         question,
         queryBuilderMode,
-      }) && <ToggleNativeQueryPreview question={question} />}
+      }) && <ToggleNativeQueryPreview question={question} />} */}
       {hasExploreResultsLink && <ExploreResultsLink question={question} />}
       {hasRunButton && !isShowingNotebook && (
         <Box className={ViewTitleHeaderS.ViewHeaderIconButtonContainer}>

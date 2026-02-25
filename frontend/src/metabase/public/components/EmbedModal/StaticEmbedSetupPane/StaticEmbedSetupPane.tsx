@@ -233,10 +233,11 @@ export const StaticEmbedSetupPane = ({
             value={EMBED_MODAL_TABS.Parameters}
             onClick={() => setActiveTab(EMBED_MODAL_TABS.Parameters)}
           >{t`Parameters`}</Tabs.Tab>
-          <Tabs.Tab
+
+          {/* <Tabs.Tab
             value={EMBED_MODAL_TABS.LookAndFeel}
             onClick={() => setActiveTab(EMBED_MODAL_TABS.LookAndFeel)}
-          >{t`Look and Feel`}</Tabs.Tab>
+          >{t`Look and Feel`}</Tabs.Tab> */}
         </Tabs.List>
         {/**
          * Please do not add more than one `Tabs.Panel` here.
@@ -307,33 +308,6 @@ export const StaticEmbedSetupPane = ({
                   />
                   {activePane === "code"
                     ? getServerEmbedCodePane(EMBED_MODAL_TABS.Parameters)
-                    : null}
-                </>
-              }
-            />
-          ) : activeTab === EMBED_MODAL_TABS.LookAndFeel ? (
-            <SettingsTabLayout
-              settingsSlot={
-                <LookAndFeelSettings
-                  resourceType={resourceType}
-                  displayOptions={displayOptions}
-                  onChangeDisplayOptions={setDisplayOptions}
-                />
-              }
-              previewSlot={
-                <>
-                  <PreviewModeSelector
-                    value={activePane}
-                    onChange={setActivePane}
-                  />
-                  <PreviewPane
-                    hidden={activePane !== "preview"}
-                    className={CS.flexFull}
-                    previewUrl={iframeUrl}
-                    backgroundType={getBackgroundType(displayOptions)}
-                  />
-                  {activePane === "code"
-                    ? getServerEmbedCodePane(EMBED_MODAL_TABS.LookAndFeel)
                     : null}
                 </>
               }

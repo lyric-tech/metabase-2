@@ -71,11 +71,11 @@ export function HeadBreadcrumbs({
               part
             ) : (
               <HeaderBadge
-                to={part.href}
+                // to={part.href}
                 icon={part.icon}
                 inactiveColor={badgeInactiveColor}
               >
-                {part.name}
+               {part.name}
               </HeaderBadge>
             )}
             {!isLast &&

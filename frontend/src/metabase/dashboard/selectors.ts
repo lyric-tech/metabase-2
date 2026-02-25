@@ -59,6 +59,7 @@ import {
   isQuestionCard,
   isQuestionDashCard,
 } from "./utils";
+import { LYRIC_CONSTANTS } from "../../lyric-constants";
 
 type SidebarState = State["dashboard"]["sidebar"];
 
@@ -654,13 +655,16 @@ export const getTabHiddenParameterSlugs = createSelector(
   [getParameters, getCurrentTabDashcards, getIsEditing],
   (parameters, currentTabDashcards, isEditing) => {
     if (isEditing) {
-      // All filters should be visible in edit mode
-      return undefined;
+      // return undefined;
+      // All filters should be visible in edit mode except filter with 'lyric_scenario_id' as slug
+      return LYRIC_CONSTANTS.LYRIC_SCENARIO_ID;
     }
 
     const currentTabParameterIds = getMappedParametersIds(currentTabDashcards);
     const hiddenParameters = parameters.filter(
-      (parameter) => !currentTabParameterIds.includes(parameter.id),
+      (parameter) => parameter.slug === LYRIC_CONSTANTS.LYRIC_SCENARIO_ID ||
+        parameter.id === LYRIC_CONSTANTS.LYRIC_SCENARIO_ID ||
+        !currentTabParameterIds.includes(parameter.id)
     );
 
     return hiddenParameters.map((p) => p.slug).join(",");

@@ -1,5 +1,6 @@
 import { createAction } from "redux-actions";
 import _ from "underscore";
+import { produce } from "immer";
 
 import { invalidateNotificationsApiCache, revisionApi } from "metabase/api";
 import Databases from "metabase/entities/databases";
@@ -56,6 +57,9 @@ import { zoomInRow } from "../zoom";
 import { loadCard } from "./card";
 import { API_UPDATE_QUESTION, SOFT_RELOAD_CARD } from "./types";
 import { updateQuestion } from "./updateQuestion";
+import { CardApi } from "metabase/services";
+
+import { LYRIC_CONSTANTS } from "../../../../lyric-constants";
 
 export const RESET_QB = "metabase/qb/RESET_QB";
 export const resetQB = createAction(RESET_QB);
@@ -220,6 +224,48 @@ export const setDatasetQuery =
 type OnCreateOptions = { dashboardTabId?: DashboardTabId | undefined };
 
 export const API_CREATE_QUESTION = "metabase/qb/API_CREATE_QUESTION";
+
+async function updateCardWithLyricScenarioId(card: any, metaData: any) {
+  const metadataTablesObj = (metaData as any)?.payload?.entities?.tables;
+  const tableId = (card as any)["table_id"];
+
+  let cardsTableObj = undefined;
+
+  for (const key in metadataTablesObj) {
+    if (metadataTablesObj[key]?.id === tableId) {
+      cardsTableObj = metadataTablesObj[key];
+      break;
+    }
+  }
+
+  const lyricScenarioId = cardsTableObj?.original_fields?.find(
+    (field: any) => field.name === LYRIC_CONSTANTS.LYRIC_SCENARIO_ID,
+  )?.id;
+  const sourceQuery = (card as any)?.dataset_query?.query?.["source-query"];
+  const isFieldAlreadyInBreakout = sourceQuery?.breakout?.some(
+    (item: any) =>
+      Array.isArray(item) && item[0] === "field" && item[1] === lyricScenarioId,
+  );
+
+  if (
+    sourceQuery &&
+    Array.isArray(sourceQuery.breakout) &&
+    !isFieldAlreadyInBreakout &&
+    lyricScenarioId
+  ) {
+    const updatedCardWithLyricScenarioId = produce(card, (draft: any) => {
+      draft.dataset_query.query["source-query"].breakout.push([
+        "field",
+        lyricScenarioId,
+        { "base-type": "type/Text" },
+      ]);
+    });
+
+    const updatedCard = await CardApi.update(updatedCardWithLyricScenarioId);
+    return updatedCard;
+  }
+}
+
 export const apiCreateQuestion = (
   question: Question,
   options?: OnCreateOptions,
@@ -256,7 +302,9 @@ export const apiCreateQuestion = (
     const createdCard = createdQuestion.lockDisplay().card();
     dispatch({ type: API_CREATE_QUESTION, payload: createdCard });
 
-    await dispatch(loadMetadataForCard(createdCard));
+    const metadataResponse = await dispatch(loadMetadataForCard(createdCard));
+    await updateCardWithLyricScenarioId(createdCard, metadataResponse);
+
     const createdQuestionWithMetadata = new Question(
       createdCard,
       getMetadata(getState()),
@@ -303,7 +351,7 @@ export const apiUpdateQuestion = (
     // When viewing a dataset, its dataset_query is swapped with a clean query using the dataset as a source table
     // (it's necessary for datasets to behave like tables opened in simple mode)
     // When doing updates like changing name, description, etc., we need to omit the dataset_query in the request body
-    const updatedQuestion = await reduxUpdateQuestion(
+    let updatedQuestion = await reduxUpdateQuestion(
       submittableQuestion,
       dispatch,
       {
@@ -319,6 +367,22 @@ export const apiUpdateQuestion = (
     // (some of the old alerts might be removed during update)
     dispatch(invalidateNotificationsApiCache());
 
+    const metadataResponse = await dispatch(
+      loadMetadataForCard(question.card()),
+    );
+  
+
+    /* Adding the lyric scenario id to the question */
+    const updatedCard = updatedQuestion.card();
+    const updatedCardResponse = await updateCardWithLyricScenarioId(
+      updatedCard,
+      metadataResponse,
+    );
+    
+    if (updatedCardResponse) {
+      updatedQuestion = updatedQuestion.setCard(updatedCardResponse);
+    }
+
     await dispatch({
       type: API_UPDATE_QUESTION,
       payload: updatedQuestion.card(),
@@ -329,8 +393,6 @@ export const apiUpdateQuestion = (
       // of the primary key field in the same update
       await dispatch(updateModelIndexes(question));
     }
-
-    await dispatch(loadMetadataForCard(question.card()));
 
     if (rerunQuery) {
       dispatch(runQuestionQuery());

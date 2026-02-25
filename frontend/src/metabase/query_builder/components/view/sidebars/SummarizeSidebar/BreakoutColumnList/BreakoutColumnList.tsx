@@ -15,6 +15,7 @@ import * as Lib from "metabase-lib";
 import BreakoutColumnListS from "./BreakoutColumnList.module.css";
 import { BreakoutColumnListItem } from "./BreakoutColumnListItem";
 import { getBreakoutListItem, getColumnSections, isPinnedColumn } from "./util";
+import { LYRIC_CONSTANTS } from "../../../../../../../lyric-constants";
 
 export type BreakoutColumnListProps = UpdateQueryHookProps;
 
@@ -40,12 +41,13 @@ export function BreakoutColumnList({
   const breakouts = Lib.breakouts(query, stageIndex);
   const [pinnedItemCount, setPinnedItemCount] = useState(breakouts.length);
 
+   // hiding 'Lyric Scenario ID' column option from the summarize pinned column list
   const pinnedItems = useMemo(
     () =>
       breakouts
         .slice(0, pinnedItemCount)
         .map((breakout) => getBreakoutListItem(query, stageIndex, breakout))
-        .filter(isNotNull),
+        .filter((item) => !item?.displayName.includes(LYRIC_CONSTANTS.LYRIC_SCENARIO_ID_LABEL) && isNotNull),
     [query, stageIndex, breakouts, pinnedItemCount],
   );
 
