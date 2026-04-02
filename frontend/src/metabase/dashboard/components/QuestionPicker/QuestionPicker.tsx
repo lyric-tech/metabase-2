@@ -80,7 +80,9 @@ function QuestionPickerInner({
         onChange={handleSearchTextChange}
       />
 
-      {(hasDataAccess || hasNativeWrite) && (
+      {/* Lyric: Hide New Question and SQL Query Editor while adding new charts */}
+
+      {/* {(hasDataAccess || hasNativeWrite) && (
         <Flex gap="sm" mb="md" data-testid="new-button-bar">
           {hasDataAccess && (
             <Button
@@ -101,7 +103,7 @@ function QuestionPickerInner({
             </Button>
           )}
         </Flex>
-      )}
+      )} */}
 
       {!debouncedSearchText && (
         <>

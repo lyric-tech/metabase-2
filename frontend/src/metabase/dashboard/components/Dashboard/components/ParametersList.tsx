@@ -11,11 +11,10 @@ export function ParametersList(
   props: Omit<DashboardParameterListProps, "parameters">,
 ) {
   const parameters = useSelector(getDashboardHeaderValuePopulatedParameters);
-
+console.log(parameters);
   const parametersWithoutLyricScenarioId = parameters.filter(
     (parameter) =>
-      parameter.name !== LYRIC_CONSTANTS.LYRIC_SCENARIO_ID_LABEL ||
-      parameter.slug !== LYRIC_CONSTANTS.LYRIC_SCENARIO_ID,
+      parameter.slug !== LYRIC_CONSTANTS.LYRIC_SCENARIO_ID
   );
 
   return (
