@@ -5,6 +5,7 @@ import * as Lib from "metabase-lib";
 
 import { FilterPicker } from "../../FilterPicker";
 import { FilterPill } from "../FilterPill";
+import { LYRIC_CONSTANTS } from "../../../../../../lyric-constants";
 
 interface FilterPanelPopoverProps {
   query: Lib.Query;
@@ -37,6 +38,10 @@ export function FilterPanelPopover({
     onChange(Lib.removeClause(query, stageIndex, filter));
     setIsOpened(false);
   };
+
+  if (filterInfo?.longDisplayName?.includes(LYRIC_CONSTANTS.LYRIC_SCENARIO_ID_LABEL)) {
+    return null;
+  }
 
   return (
     <Popover

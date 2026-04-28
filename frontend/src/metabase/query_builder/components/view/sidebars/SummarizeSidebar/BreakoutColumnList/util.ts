@@ -1,6 +1,7 @@
 import * as Lib from "metabase-lib";
 
 import type { ListItem, ListSection } from "./types";
+import { LYRIC_CONSTANTS } from "../../../../../../../lyric-constants";
 
 export function getBreakoutListItem(
   query: Lib.Query,
@@ -66,9 +67,10 @@ export function getColumnSections(
   return Lib.groupColumns(filteredColumns).map((group) => {
     const groupInfo = Lib.displayInfo(query, stageIndex, group);
 
+    // hiding 'Lyric Scenario ID' column option from the summarize column list
     const items = Lib.getColumnsFromColumnGroup(group).flatMap((column) =>
       getColumnListItems(query, stageIndex, breakouts, column),
-    );
+    )?.filter(item => !item.displayName.includes(LYRIC_CONSTANTS.LYRIC_SCENARIO_ID_LABEL));
 
     return {
       name: groupInfo.displayName,

@@ -77,10 +77,11 @@ export function QuestionList({
   } = useSearchQuery(
     isSearching
       ? {
-          q: trimmedSearchText,
-          ...(showOnlyPublicCollections && {
-            filter_items_in_personal_collection: "exclude" as const,
-          }),
+          // q: trimmedSearchText,
+          // ...(showOnlyPublicCollections && {
+          //   filter_items_in_personal_collection: "exclude" as const,
+          // }),
+          collection: collectionId,
           models: isEmbeddingSdk() // FIXME(sdk): remove this logic when v51 is released
             ? ["card", "dataset"] // ignore "metric" as SDK is used with v50 (or below) now, where we don't have this entity type
             : ["card", "dataset", "metric"],
@@ -132,10 +133,13 @@ export function QuestionList({
     );
   }
 
+  // this added to filter the list based on the search text
+  const newList = list.filter((item:any) => searchText.trim() === "" || item.getName().toLowerCase().includes(searchText.toLowerCase()));
+
   return (
     <>
       <SelectList>
-        {list.map((item) => (
+        {newList.map((item) => (
           <Flex key={item.id} className={S.QuestionListItemRoot} gap="2px">
             <SelectList.Item
               id={item.id}

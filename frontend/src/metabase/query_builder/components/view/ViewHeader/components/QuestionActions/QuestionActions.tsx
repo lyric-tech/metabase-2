@@ -104,8 +104,8 @@ export const QuestionActions = ({
 
   return (
     <>
-      <Divider orientation="vertical" my="xs" />
-      {!question.isArchived() && (
+      {/* <Divider orientation="vertical" my="xs" /> */}
+      {/* {!question.isArchived() && (
         <Box className={ViewTitleHeaderS.ViewHeaderIconButtonContainer}>
           <BookmarkToggle
             onCreateBookmark={onToggleBookmark}
@@ -113,8 +113,8 @@ export const QuestionActions = ({
             isBookmarked={isBookmarked}
           />
         </Box>
-      )}
-      <Box className={ViewTitleHeaderS.ViewHeaderIconButtonContainer}>
+      )} */}
+      {/* <Box className={ViewTitleHeaderS.ViewHeaderIconButtonContainer} >
         <ToolbarButton
           className={ViewTitleHeaderS.ViewHeaderIconButton}
           icon="info"
@@ -124,7 +124,7 @@ export const QuestionActions = ({
           tooltipLabel={t`More info`}
           aria-label={t`More info`}
         />
-      </Box>
+      </Box> */}
       {canAppend && (
         <>
           <UploadInput
@@ -163,13 +163,13 @@ export const QuestionActions = ({
           </Box>
         </>
       )}
-      {!question.isArchived() && !shouldShowDataStudioLink && (
+      {/* {!question.isArchived() && !shouldShowDataStudioLink && (
         <QuestionMoreActionsMenu
           question={question}
           onOpenModal={onOpenModal}
           onSetQueryBuilderMode={onSetQueryBuilderMode}
         />
-      )}
+      )} */}
       {shouldShowDataStudioLink && (
         <PLUGIN_DATA_STUDIO.DataStudioToolbarButton question={question} />
       )}

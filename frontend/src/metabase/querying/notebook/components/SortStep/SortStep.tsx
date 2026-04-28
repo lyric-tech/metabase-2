@@ -9,6 +9,7 @@ import type { NotebookStepProps } from "../../types";
 import { ClauseStep } from "../ClauseStep";
 
 import S from "./SortStep.module.css";
+import { LYRIC_CONSTANTS } from "../../../../../lyric-constants";
 
 export function SortStep({
   query,
@@ -120,6 +121,12 @@ const SortPopover = ({
 
     const filteredColumns = columns.filter((column) => {
       const columnInfo = Lib.displayInfo(query, stageIndex, column);
+
+      // hide 'Lyric Scenario ID' column option from the add filter popover
+      if (columnInfo?.displayName.includes(LYRIC_CONSTANTS.LYRIC_SCENARIO_ID_LABEL)) {
+        return false;
+      }
+
       const isAlreadyUsed = columnInfo.orderByPosition != null;
       const isSelected = checkColumnSelected(columnInfo, orderByIndex);
       return isSelected || !isAlreadyUsed;

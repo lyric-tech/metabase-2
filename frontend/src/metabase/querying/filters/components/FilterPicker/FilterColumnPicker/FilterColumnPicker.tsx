@@ -29,6 +29,7 @@ import type {
 } from "../types";
 
 import S from "./FilterColumnPicker.module.css";
+import { LYRIC_CONSTANTS } from "../../../../../../lyric-constants";
 
 type Item = ColumnListItem | SegmentListItem | ExpressionClauseItem;
 
@@ -179,6 +180,7 @@ function getSections({
 
     return columnGroups.map((group) => {
       const groupInfo = Lib.displayInfo(query, stageIndex, group);
+
       const columnItems = Lib.getColumnsFromColumnGroup(group).map((column) => {
         const columnInfo = Lib.displayInfo(query, stageIndex, column);
         return {
@@ -192,7 +194,10 @@ function getSections({
           combinedDisplayName: `${columnInfo.table?.displayName ?? ""} ${columnInfo.displayName}`,
           longDisplayName: columnInfo.longDisplayName,
         };
-      });
+      })?.filter(
+        columnItem => !columnItem.displayName.includes(LYRIC_CONSTANTS.LYRIC_SCENARIO_ID_LABEL)    
+      );
+
       const segments = groupInfo.isSourceTable
         ? Lib.availableSegments(query, stageIndex)
         : [];
